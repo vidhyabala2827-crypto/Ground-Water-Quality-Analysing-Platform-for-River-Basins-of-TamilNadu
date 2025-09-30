@@ -45,7 +45,7 @@ st.image(
 # -----------------
 @st.cache_data
 def load_data(file):
-    if file.name.endswith('.csv'):
+    if file.name.endswith('WQ_Basin.csv'):
         df = pd.read_csv(file)
     else:
         df = pd.read_excel(file)
@@ -244,3 +244,4 @@ if df is not None and menu != "Select an option":
 # -----------------
 elif df is None:
     st.warning("Please upload a CSV or Excel file to start analysis")
+
