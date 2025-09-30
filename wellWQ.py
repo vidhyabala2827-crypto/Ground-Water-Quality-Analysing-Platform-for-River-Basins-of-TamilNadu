@@ -45,7 +45,7 @@ st.image(
 # -----------------
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("WQ_Basin.csv") 
+    df = pd.read_csv("WQ_Basin.csv")  
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
@@ -63,22 +63,21 @@ exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
 parameters = [p for p in parameters if p not in exclude_cols]
 
 # -----------------
-# Sidebar Widgets
-# -----------------
-st.sidebar.title("Options")
-
-# -----------------
-# Help button at top
+# Sidebar: Help button at top
 # -----------------
 help_clicked = st.sidebar.button("Help?")
 
-# Menu selection
+# -----------------
+# Sidebar: Menu selection
+# -----------------
 menu = st.sidebar.selectbox(
     "Select an option",
     ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
-# Sidebar static options
+# -----------------
+# Sidebar: Static Widgets (middle)
+# -----------------
 basin = st.sidebar.selectbox("Select Basin", basins)
 year_range = st.sidebar.slider(
     "Select Year Range",
