@@ -8,24 +8,6 @@ import matplotlib.pyplot as plt
 # ----------------------------
 import pandas as pd
 
-data_file = "WQ_Basin.csv"  # Make sure this file is in your repo
-
-# Load CSV
-df = pd.read_csv(data_file)
-
-# Display table in app
-st.subheader("Water Quality Data")
-st.dataframe(df)
-
-# Download option
-st.download_button(
-    label="Download Data as CSV",
-    data=df.to_csv(index=False),
-    file_name="water_quality.csv",
-    mime="text/csv"
-)
-
-
 # -----------------
 # Page Configuration
 # -----------------
@@ -256,4 +238,21 @@ if uploaded_file:
             else:
                 st.warning("No data available for the selected basin and year(s).")
 
+
+data_file = "WQ_Basin.csv"  # Make sure this file is in your repo
+
+# Load CSV
+df = pd.read_csv(data_file)
+
+# Display table in app
+st.subheader("Water Quality Data")
+st.dataframe(df)
+
+# Download option
+st.download_button(
+    label="Download Data as CSV",
+    data=df.to_csv(index=False),
+    file_name="water_quality.csv",
+    mime="text/csv"
+)
 
