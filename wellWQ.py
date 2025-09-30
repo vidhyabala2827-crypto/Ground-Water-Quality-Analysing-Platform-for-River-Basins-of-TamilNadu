@@ -181,8 +181,8 @@ if menu != "Select an option":
 if author_clicked:
     st.subheader("Authors & Data Source")
     st.markdown("""
-- **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
-- **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
+- **B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
+- **V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
 - **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
 
 **Data Source:** Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
@@ -196,6 +196,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
