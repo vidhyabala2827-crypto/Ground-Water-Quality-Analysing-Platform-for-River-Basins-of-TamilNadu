@@ -77,7 +77,7 @@ if help_clicked:
     st.markdown("""
 **Descriptive Statistics**
 - Pick a basin and year range to view summaries  
-- Stats available: mean, median, min, max, std, count  
+- Stats available: mean, median, minimum_value, maximum_value, standard_deviation, count  
 
 **Visualizations**
 - Compare parameters across years and seasons  
@@ -234,3 +234,4 @@ if menu != "Select an option":
                     colorbar.set_ticks([-1,-0.5,0,0.5,1])
                     colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
                     st.pyplot(plt)
+
