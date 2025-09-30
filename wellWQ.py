@@ -172,7 +172,7 @@ if menu != "Select an option":
                     ax = sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1,vmax=1)
                     colorbar = ax.collections[0].colorbar
                     colorbar.set_ticks([-1,-0.5,0,0.5,1])
-                    colorbar.set_ticklabels(['-1\nStrong Neg','Weak (-0.5)','0\nNo Corr','Weak (+0.5)','+1\nStrong Pos'])
+                    colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
                     st.pyplot(plt)
 
 # -----------------
@@ -196,4 +196,5 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
