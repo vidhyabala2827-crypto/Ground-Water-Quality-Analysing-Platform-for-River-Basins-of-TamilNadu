@@ -45,7 +45,7 @@ st.image(
 # -----------------
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("WQ_Basins.csv")  
+    df = pd.read_csv("WQ_Basin.csv")  
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
@@ -238,3 +238,4 @@ if menu != "Select an option":
             st.pyplot(plt)
         else:
             st.warning("No data available for the selected basin and year(s).")
+
