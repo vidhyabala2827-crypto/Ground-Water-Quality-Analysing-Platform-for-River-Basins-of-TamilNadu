@@ -1,4 +1,4 @@
-import streamlit as st
+8import streamlit as st
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -25,7 +25,7 @@ st.markdown("""
 # -----------------
 # App Title
 # -----------------
-st.markdown("<h1 style='text-align: center; color: #003366;'>Well Water Quality Analyzer - Tamil Nadu Basins</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #003366;'>Ground water quality Analysis- River Nasins of TamilNadu</h1>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center; font-style: italic; color: #0059b3;'>\"We never know the worth of water till the well is dry\"</h4>", unsafe_allow_html=True)
 st.markdown("<h5 style='text-align: center; color: #003366;'>- Thomas Fuller</h5>", unsafe_allow_html=True)
 st.image(
@@ -196,6 +196,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
