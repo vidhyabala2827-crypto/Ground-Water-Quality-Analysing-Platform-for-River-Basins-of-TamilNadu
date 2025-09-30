@@ -45,7 +45,7 @@ st.image(
 # -----------------
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("WQ_Basin.csv")  
+    df = pd.read_csv("WQ_Basin.csv")
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
@@ -65,84 +65,13 @@ def load_data(file):
     df['Year'] = df['Date'].dt.year
     return df
 
+df = df_default.copy()
+
 # -----------------
-# Sidebar Widgets - Top Section
+# Sidebar Top: Help Button
 # -----------------
 help_clicked = st.sidebar.button("Help?")
 
-menu = st.sidebar.selectbox(
-    "Select an option",
-    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
-)
-
-# -----------------
-# Only show dynamic controls if user selects a menu option
-# -----------------
-df = df_default  # default first
-basins = df['Basin'].dropna().unique()
-years = np.sort(df['Year'].dropna().astype(int))
-parameters = df.select_dtypes(include=[np.number]).columns.tolist()
-exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
-parameters = [p for p in parameters if p not in exclude_cols]
-
-if menu != "Select an option":
-    # Step 1: Select Basin
-    basin = st.sidebar.selectbox("Select Basin", basins)
-
-    # Step 2: Select Year Range
-    year_range = st.sidebar.slider(
-        "Select Year Range",
-        min_value=int(years.min()),
-        max_value=int(years.max()),
-        value=(int(years.min()), int(years.max())),
-        step=1
-    )
-
-    # Step 3: Select Parameter
-    param = st.sidebar.selectbox("Select Parameter", parameters)
-
-    # Step 4: Depending on Menu, show stats or visualization type
-    if menu == "Descriptive Statistics":
-        stat = st.sidebar.multiselect(
-            "Select Statistics", 
-            ["mean", "median", "min", "max", "std", "count"], 
-            default=["mean"]
-        )
-    elif menu == "Visualizations":
-        viz_type = st.sidebar.selectbox(
-            "Select Visualization",
-            ["Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"]
-        )
-    elif menu == "Correlation Analysis":
-        corr_method = st.sidebar.radio(
-            "Select Correlation Method",
-            ["pearson", "spearman"]
-        )
-
-# -----------------
-# Bottom Section - Always Present
-# -----------------
-st.sidebar.markdown("---")
-st.sidebar.subheader("Authors & Data Source")
-st.sidebar.markdown("""
-- **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
-- **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
-- **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
-
-**Data Source:** Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
-""")
-
-uploaded_file = st.sidebar.file_uploader(
-    "Upload your own CSV/Excel (optional)",
-    type=["csv", "xls", "xlsx"]
-)
-
-if uploaded_file:
-    df = load_data(uploaded_file)
-
-# -----------------
-# Show Help
-# -----------------
 if help_clicked:
     st.subheader("Help / About")
     st.markdown("""
@@ -168,73 +97,140 @@ if help_clicked:
 """)
 
 # -----------------
-# Filter by year
+# Sidebar: Optional Upload (Always at Bottom)
 # -----------------
-def filter_by_year(df, year_range):
-    start, end = year_range
-    return df[(df['Year'] >= start) & (df['Year'] <= end)]
+uploaded_file = st.sidebar.file_uploader(
+    "Upload your own CSV/Excel (optional)",
+    type=["csv", "xls", "xlsx"]
+)
+if uploaded_file:
+    df = load_data(uploaded_file)
 
 # -----------------
-# Main Analysis Section
+# Sidebar: Authors & Data Source (Always at Bottom)
 # -----------------
+with st.sidebar.expander("Authors & Data Source"):
+    st.markdown("""
+- **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
+- **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
+- **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
+
+**Data Source:** Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
+""")
+
+# -----------------
+# Sidebar Step 1: Select Option
+# -----------------
+menu = st.sidebar.selectbox(
+    "Select an option",
+    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+)
+
+# Do nothing if no option selected
 if menu != "Select an option":
-    filtered = df[df['Basin'] == basin]
-    filtered = filter_by_year(filtered, year_range)
 
-    if filtered.empty:
-        st.warning("No data available for the selected basin and year(s).")
-    else:
-        # Descriptive Statistics
-        if menu == "Descriptive Statistics":
-            st.subheader("Descriptive Statistics")
-            results = filtered.groupby(['Year', 'Season'])[param].agg(stat).reset_index()
-            st.write(f"{stat} of {param} for {basin} during selected year(s)")
-            st.dataframe(results)
+    # -----------------
+    # Step 2: Select Basin
+    # -----------------
+    basins = df['Basin'].dropna().unique()
+    basin = st.sidebar.selectbox("Select Basin", ["Select a Basin"] + list(basins))
 
-        # Visualizations
-        elif menu == "Visualizations":
-            st.subheader("Visualizations")
-            filtered['Year'] = filtered['Year'].astype(int)
-            if viz_type == "Bar Chart":
-                avg = filtered.groupby(['Year', 'Season'])[param].mean().reset_index()
-                plt.figure(figsize=(12,6))
-                sns.barplot(x="Year", y=param, hue="Season", data=avg)
-                plt.title(f"Bar Chart of {param} for {basin}")
-                plt.xticks(rotation=90)
-                st.pyplot(plt)
-            elif viz_type == "Scatter Plot":
-                plt.figure(figsize=(12,6))
-                sns.scatterplot(x="Year", y=param, hue="Season", data=filtered)
-                sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
-                plt.title(f"Scatter Plot of {param} for {basin}")
-                plt.xticks(rotation=90)
-                st.pyplot(plt)
-            elif viz_type == "Box Plot":
-                plt.figure(figsize=(10,6))
-                sns.boxplot(x="Season", y=param, data=filtered)
-                plt.title(f"Box Plot of {param} for {basin}")
-                st.pyplot(plt)
-            elif viz_type == "Line Graph":
-                plt.figure(figsize=(12,6))
-                sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered)
-                plt.title(f"Line Graph of {param} for {basin}")
-                plt.xticks(rotation=90)
-                st.pyplot(plt)
+    if basin != "Select a Basin":
 
-        # Correlation Analysis
-        elif menu == "Correlation Analysis":
-            st.subheader("Correlation Analysis")
-            corr_df = filtered[parameters].dropna()
-            corr = corr_df.corr(method=corr_method)
-            st.write(f"{corr_method.capitalize()} Correlation Matrix for {basin} (selected year(s))")
-            st.dataframe(corr)
+        # -----------------
+        # Step 3: Select Year Range
+        # -----------------
+        years = np.sort(df['Year'].dropna().astype(int))
+        year_range = st.sidebar.slider(
+            "Select Year Range",
+            min_value=int(years.min()),
+            max_value=int(years.max()),
+            value=(int(years.min()), int(years.max())),
+            step=1
+        )
 
-            plt.figure(figsize=(12,8))
-            ax = sns.heatmap(
-                corr, annot=True, cmap="coolwarm", fmt=".2f",
-                vmin=-1, vmax=1, cbar_kws={'label':'Correlation Strength'}
-            )
-            colorbar = ax.collections[0].colorbar
-            colorbar.set_ticks([-1,-0.5,0,0.5,1])
-            colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
-            st.pyplot(plt)
+        # -----------------
+        # Step 4: Select Parameter
+        # -----------------
+        parameters = df.select_dtypes(include=[np.number]).columns.tolist()
+        exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
+        parameters = [p for p in parameters if p not in exclude_cols]
+        param = st.sidebar.selectbox("Select Parameter", ["Select a Parameter"] + parameters)
+
+        if param != "Select a Parameter":
+            filtered = df[(df['Basin'] == basin) & (df['Year'] >= year_range[0]) & (df['Year'] <= year_range[1])]
+
+            if filtered.empty:
+                st.warning("No data available for the selected basin and year(s).")
+            else:
+                # -----------------
+                # Step 5: Depending on Menu, show stats or viz type
+                # -----------------
+                season_palette = {"Pre-Monsoon": "#1f77b4", "Post-Monsoon": "#ff7f0e"}
+
+                if menu == "Descriptive Statistics":
+                    stat = st.sidebar.multiselect(
+                        "Select Statistics",
+                        ["mean", "median", "min", "max", "std", "count"]
+                    )
+                    if stat:
+                        st.subheader("Descriptive Statistics")
+                        results = filtered.groupby(['Year', 'Season'])[param].agg(stat).reset_index()
+                        st.write(f"{stat} of {param} for {basin} during selected year(s)")
+                        st.dataframe(results)
+
+                elif menu == "Visualizations":
+                    viz_type = st.sidebar.selectbox(
+                        "Select Visualization",
+                        ["Select Visualization", "Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"]
+                    )
+                    if viz_type != "Select Visualization":
+                        st.subheader("Visualizations")
+                        filtered['Year'] = filtered['Year'].astype(int)
+
+                        if viz_type == "Bar Chart":
+                            avg = filtered.groupby(['Year', 'Season'])[param].mean().reset_index()
+                            plt.figure(figsize=(12,6))
+                            sns.barplot(x="Year", y=param, hue="Season", data=avg, palette=season_palette)
+                            plt.title(f"Bar Chart of {param} for {basin}")
+                            plt.xticks(rotation=90)
+                            st.pyplot(plt)
+
+                        elif viz_type == "Scatter Plot":
+                            plt.figure(figsize=(12,6))
+                            sns.scatterplot(x="Year", y=param, hue="Season", data=filtered, palette=season_palette)
+                            sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
+                            plt.title(f"Scatter Plot of {param} for {basin}")
+                            plt.xticks(rotation=90)
+                            st.pyplot(plt)
+
+                        elif viz_type == "Box Plot":
+                            plt.figure(figsize=(10,6))
+                            sns.boxplot(x="Season", y=param, data=filtered, palette=season_palette)
+                            plt.title(f"Box Plot of {param} for {basin}")
+                            st.pyplot(plt)
+
+                        elif viz_type == "Line Graph":
+                            plt.figure(figsize=(12,6))
+                            sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered, palette=season_palette)
+                            plt.title(f"Line Graph of {param} for {basin}")
+                            plt.xticks(rotation=90)
+                            st.pyplot(plt)
+
+                elif menu == "Correlation Analysis":
+                    corr_method = st.sidebar.radio("Select Correlation Method", ["pearson", "spearman"])
+                    corr_df = filtered[parameters].dropna()
+                    corr = corr_df.corr(method=corr_method)
+                    st.subheader("Correlation Analysis")
+                    st.write(f"{corr_method.capitalize()} Correlation Matrix for {basin} (selected year(s))")
+                    st.dataframe(corr)
+
+                    plt.figure(figsize=(12,8))
+                    ax = sns.heatmap(
+                        corr, annot=True, cmap="coolwarm", fmt=".2f",
+                        vmin=-1, vmax=1, cbar_kws={'label':'Correlation Strength'}
+                    )
+                    colorbar = ax.collections[0].colorbar
+                    colorbar.set_ticks([-1,-0.5,0,0.5,1])
+                    colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
+                    st.pyplot(plt)
