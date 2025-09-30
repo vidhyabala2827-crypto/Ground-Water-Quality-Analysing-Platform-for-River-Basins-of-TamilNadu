@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # ----------------------------
 import pandas as pd
 
-data_file = "water_quality.csv"  # Make sure this file is in your repo
+data_file = "WQ_Basin.csv"  # Make sure this file is in your repo
 
 # Load CSV
 df = pd.read_csv(data_file)
@@ -255,4 +255,5 @@ if uploaded_file:
                 st.pyplot(plt)
             else:
                 st.warning("No data available for the selected basin and year(s).")
+
 
