@@ -41,17 +41,39 @@ st.image(
 )
 
 # -----------------
-# Load User Data (No default)
+# Load default data
+# -----------------
+@st.cache_data
+def load_default_data():
+    df = pd.read_csv("WQ_Basin.csv")  # default CSV in app folder
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    df['Year'] = df['Date'].dt.year
+    return df
+
+df_default = load_default_data()
+
+# -----------------
+# Load user uploaded data (optional)
 # -----------------
 @st.cache_data
 def load_data(file):
-    if file.name.endswith('WQ_Basin.csv'):
+    if file.name.endswith('.csv'):
         df = pd.read_csv(file)
     else:
         df = pd.read_excel(file)
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
+
+uploaded_file = st.sidebar.file_uploader(
+    "Upload your own CSV/Excel (optional)", 
+    type=["csv", "xls", "xlsx"]
+)
+
+if uploaded_file:
+    df = load_data(uploaded_file)
+else:
+    df = df_default
 
 # -----------------
 # Sidebar Widgets
@@ -64,19 +86,6 @@ menu = st.sidebar.selectbox(
     "Select an option",
     ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
-
-# Upload widget at bottom
-st.sidebar.markdown("---")
-st.sidebar.subheader("Upload Your Own Data (Optional)")
-uploaded_file = st.sidebar.file_uploader(
-    "Drag & drop a CSV/Excel file here", 
-    type=["csv", "xls", "xlsx"]
-)
-
-if uploaded_file:
-    df = load_data(uploaded_file)
-else:
-    df = None
 
 # Authors button at bottom
 st.sidebar.markdown("---")
@@ -132,9 +141,9 @@ if show_authors:
     """)
 
 # -----------------
-# Only show analysis if user uploaded data and selected a menu option
+# Only show analysis if user selects a menu option
 # -----------------
-if df is not None and menu != "Select an option":
+if menu != "Select an option":
     # Extract dynamic info
     basins = df['Basin'].dropna().unique()
     years = np.sort(df['Year'].dropna().astype(int))
@@ -142,7 +151,7 @@ if df is not None and menu != "Select an option":
     exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
     parameters = [p for p in parameters if p not in exclude_cols]
 
-    # Dynamic controls
+    # Dynamic controls appear only after menu selection
     basin = st.sidebar.selectbox("Select Basin", basins)
     year_range = st.sidebar.slider(
         "Select Year Range",
@@ -238,10 +247,3 @@ if df is not None and menu != "Select an option":
             st.pyplot(plt)
         else:
             st.warning("No data available for the selected basin and year(s).")
-
-# -----------------
-# If no data uploaded yet
-# -----------------
-elif df is None:
-    st.warning("Please upload a CSV or Excel file to start analysis")
-
