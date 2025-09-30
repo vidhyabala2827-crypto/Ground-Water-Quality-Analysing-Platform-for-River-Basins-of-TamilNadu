@@ -51,8 +51,7 @@ def load_default_data():
     return df
 
 df_default = load_default_data()
-df = df_default.copy() 
-
+df = df_default.copy()  
 # -----------------
 # Extract Static Info
 # -----------------
@@ -63,21 +62,18 @@ exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
 parameters = [p for p in parameters if p not in exclude_cols]
 
 # -----------------
-# Sidebar: Help button at top
+# Sidebar Widgets Order
 # -----------------
+# Help at top
 help_clicked = st.sidebar.button("Help?")
 
-# -----------------
-# Sidebar: Menu selection
-# -----------------
+# Main Menu
 menu = st.sidebar.selectbox(
     "Select an option",
-    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+    ["Descriptive Statistics", "Visualizations", "Correlation Analysis", "Authors & Data Source"]
 )
 
-# -----------------
-# Sidebar: Static Widgets (middle)
-# -----------------
+# Static analysis widgets
 basin = st.sidebar.selectbox("Select Basin", basins)
 year_range = st.sidebar.slider(
     "Select Year Range",
@@ -91,10 +87,10 @@ stat = st.sidebar.multiselect("Select Statistics", ["mean", "median", "min", "ma
 viz_type = st.sidebar.selectbox("Select Visualization", ["Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"])
 corr_method = st.sidebar.radio("Select Correlation Method", ["pearson", "spearman"])
 
-# -----------------
-# Sidebar: Upload User Data (at bottom)
-# -----------------
+# Divider
 st.sidebar.markdown("---")
+
+# Upload widget at bottom
 st.sidebar.subheader("Upload Your Own Data (Optional)")
 uploaded_file = st.sidebar.file_uploader(
     "Drag & drop a CSV/Excel file here", 
@@ -152,7 +148,7 @@ def filter_by_year(df, year_range):
     return df[(df['Year'] >= start) & (df['Year'] <= end)]
 
 # -----------------
-# Descriptive Statistics
+# Menu Options
 # -----------------
 if menu == "Descriptive Statistics":
     st.subheader("Descriptive Statistics")
@@ -165,9 +161,6 @@ if menu == "Descriptive Statistics":
     else:
         st.warning("No data available for the selected basin and year(s).")
 
-# -----------------
-# Visualizations
-# -----------------
 elif menu == "Visualizations":
     st.subheader("Visualizations")
     filtered = df[df['Basin'] == basin]
@@ -202,9 +195,6 @@ elif menu == "Visualizations":
     else:
         st.warning("No data available for the selected basin and year(s).")
 
-# -----------------
-# Correlation Analysis
-# -----------------
 elif menu == "Correlation Analysis":
     st.subheader("Correlation Analysis")
     filtered = df[df['Basin'] == basin]
@@ -230,3 +220,18 @@ elif menu == "Correlation Analysis":
         st.pyplot(plt)
     else:
         st.warning("No data available for the selected basin and year(s).")
+
+# -----------------
+# Authors & Data Source
+# -----------------
+elif menu == "Authors & Data Source":
+    st.subheader("Authors")
+    st.markdown("""
+    - **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
+    - **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
+    - **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
+    """)
+    st.subheader("Data Source")
+    st.markdown("""
+    - Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
+    """)
