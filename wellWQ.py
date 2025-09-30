@@ -45,7 +45,7 @@ st.image(
 # -----------------
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("WQ_Basin.csv")  
+    df = pd.read_csv("WQ_Basin.csv") 
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
@@ -63,9 +63,14 @@ exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
 parameters = [p for p in parameters if p not in exclude_cols]
 
 # -----------------
-# Sidebar Widgets (Static)
+# Sidebar Widgets
 # -----------------
 st.sidebar.title("Options")
+
+# -----------------
+# Help button at top
+# -----------------
+help_clicked = st.sidebar.button("Help?")
 
 # Menu selection
 menu = st.sidebar.selectbox(
@@ -73,7 +78,7 @@ menu = st.sidebar.selectbox(
     ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
-# Basin, Year, Parameter, Statistics, Visualization Type, Correlation
+# Sidebar static options
 basin = st.sidebar.selectbox("Select Basin", basins)
 year_range = st.sidebar.slider(
     "Select Year Range",
@@ -87,11 +92,8 @@ stat = st.sidebar.multiselect("Select Statistics", ["mean", "median", "min", "ma
 viz_type = st.sidebar.selectbox("Select Visualization", ["Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"])
 corr_method = st.sidebar.radio("Select Correlation Method", ["pearson", "spearman"])
 
-# Help button
-help_clicked = st.sidebar.button("Help?")
-
 # -----------------
-# Sidebar: Upload User Data (at Bottom)
+# Sidebar: Upload User Data (at bottom)
 # -----------------
 st.sidebar.markdown("---")
 st.sidebar.subheader("Upload Your Own Data (Optional)")
@@ -130,10 +132,17 @@ if help_clicked:
     - Methods: Pearson (linear), Spearman (rank-based)  
     - Output: correlation table + heatmap  
 
-    **Data Requirements & Tips**
-    - CSV or Excel must include: Basin, Date, Season, Latitude, Longitude, parameters  
-    - Date format: YYYY-MM-DD  
-    - Upload clean data for best results  
+    **Upload Your Own Data (Optional)**
+    - Use the widget at the bottom of the sidebar  
+    - Supported file types: CSV, XLS, XLSX  
+    - Columns must include:  
+        - Basin  
+        - Date (YYYY-MM-DD)  
+        - Season  
+        - Latitude  
+        - Longitude  
+        - Parameters (numeric columns like EC, TDS, Na, Ca, etc.)  
+    - Uploaded data replaces default data for analysis and visualization  
     """)
 
 # -----------------
