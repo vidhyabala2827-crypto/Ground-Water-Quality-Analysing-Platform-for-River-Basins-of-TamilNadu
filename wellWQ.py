@@ -1,4 +1,4 @@
-8import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -196,6 +196,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
