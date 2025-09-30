@@ -60,7 +60,7 @@ def load_data(file):
     return df
 
 # -----------------
-# Sidebar
+# Sidebar buttons
 # -----------------
 help_clicked = st.sidebar.button("Help / Instructions")
 author_clicked = st.sidebar.button("Authors & Data Source")
@@ -79,7 +79,7 @@ if help_clicked:
     st.markdown("""
 **Descriptive Statistics**
 - Pick a basin and year range to view summaries  
-- Stats available: mean, median, minimum_value, maximum_value, standard_deviation, count  
+- Stats available: mean, median, minimum_value, maximum_ value, standard_deviation, count  
 
 **Visualizations**
 - Compare parameters across years and seasons  
@@ -118,8 +118,9 @@ if menu != "Select an option":
             if filtered.empty:
                 st.warning("No data for selected basin/year.")
             else:
-                season_palette = {"Pre-Monsoon":"#1f77b4","Post-Monsoon":"#ff7f0e"}
-
+                # -----------------
+                # Descriptive Statistics
+                # -----------------
                 if menu == "Descriptive Statistics":
                     stat = st.sidebar.multiselect(
                         "Select Statistics",
@@ -130,6 +131,9 @@ if menu != "Select an option":
                         results = filtered.groupby(['Year','Season'])[param].agg(stat).reset_index()
                         st.dataframe(results)
 
+                # -----------------
+                # Visualizations
+                # -----------------
                 elif menu == "Visualizations":
                     viz_type = st.sidebar.selectbox(
                         "Select Visualization",
@@ -142,18 +146,22 @@ if menu != "Select an option":
 
                         if viz_type=="Bar Chart":
                             avg = filtered.groupby(['Year','Season'])[param].mean().reset_index()
-                            sns.barplot(x="Year", y=param, hue="Season", data=avg, palette=season_palette)
+                            sns.barplot(x="Year", y=param, hue="Season", data=avg)
                         elif viz_type=="Scatter Plot":
-                            sns.scatterplot(x="Year", y=param, hue="Season", data=filtered, palette=season_palette)
+                            sns.scatterplot(x="Year", y=param, hue="Season", data=filtered)
                             sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
                         elif viz_type=="Box Plot":
-                            sns.boxplot(x="Season", y=param, data=filtered, palette=season_palette)
+                            sns.boxplot(x="Season", y=param, data=filtered)
                         elif viz_type=="Line Graph":
-                            sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered, palette=season_palette)
+                            sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered)
+
                         plt.title(f"{viz_type} of {param} for {basin}")
                         plt.xticks(rotation=90)
                         st.pyplot(plt)
 
+                # -----------------
+                # Correlation Analysis
+                # -----------------
                 elif menu == "Correlation Analysis":
                     corr_method = st.sidebar.radio("Correlation Method", ["pearson","spearman"])
                     corr_df = filtered[parameters].dropna()
