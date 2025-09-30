@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # Page Configuration
 # -----------------
 st.set_page_config(
-    page_title="Ground Water Quality Analyzer - Tamil Nadu Basins",
+    page_title="Ground Water Quality Analysis of Tamil Nadu River Basins",
     layout="wide"
 )
 
@@ -196,5 +196,6 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
