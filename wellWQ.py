@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # Page Configuration
 # -----------------
 st.set_page_config(
-    page_title="Ground Water Quality Analyzing Platform - Tamil Nadu Basins",
+    page_title="Ground Water Quality Analyzer - Tamil Nadu Basins",
     layout="wide"
 )
 
@@ -51,6 +51,7 @@ def load_default_data():
     return df
 
 df_default = load_default_data()
+df = df_default.copy()
 
 # -----------------
 # Load user uploaded data (optional)
@@ -64,8 +65,6 @@ def load_data(file):
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
-
-df = df_default.copy()
 
 # -----------------
 # Sidebar Top: Help Button
@@ -97,28 +96,6 @@ if help_clicked:
 """)
 
 # -----------------
-# Sidebar: Optional Upload (Always at Bottom)
-# -----------------
-uploaded_file = st.sidebar.file_uploader(
-    "Upload your own CSV/Excel (optional)",
-    type=["csv", "xls", "xlsx"]
-)
-if uploaded_file:
-    df = load_data(uploaded_file)
-
-# -----------------
-# Sidebar: Authors & Data Source (Always at Bottom)
-# -----------------
-with st.sidebar.expander("Authors & Data Source"):
-    st.markdown("""
-- **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
-- **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
-- **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
-
-**Data Source:** Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
-""")
-
-# -----------------
 # Sidebar Step 1: Select Option
 # -----------------
 menu = st.sidebar.selectbox(
@@ -126,20 +103,12 @@ menu = st.sidebar.selectbox(
     ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
-# Do nothing if no option selected
+# Step-by-step selection only if menu is selected
 if menu != "Select an option":
-
-    # -----------------
-    # Step 2: Select Basin
-    # -----------------
     basins = df['Basin'].dropna().unique()
     basin = st.sidebar.selectbox("Select Basin", ["Select a Basin"] + list(basins))
 
     if basin != "Select a Basin":
-
-        # -----------------
-        # Step 3: Select Year Range
-        # -----------------
         years = np.sort(df['Year'].dropna().astype(int))
         year_range = st.sidebar.slider(
             "Select Year Range",
@@ -149,9 +118,6 @@ if menu != "Select an option":
             step=1
         )
 
-        # -----------------
-        # Step 4: Select Parameter
-        # -----------------
         parameters = df.select_dtypes(include=[np.number]).columns.tolist()
         exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
         parameters = [p for p in parameters if p not in exclude_cols]
@@ -159,13 +125,9 @@ if menu != "Select an option":
 
         if param != "Select a Parameter":
             filtered = df[(df['Basin'] == basin) & (df['Year'] >= year_range[0]) & (df['Year'] <= year_range[1])]
-
             if filtered.empty:
                 st.warning("No data available for the selected basin and year(s).")
             else:
-                # -----------------
-                # Step 5: Depending on Menu, show stats or viz type
-                # -----------------
                 season_palette = {"Pre-Monsoon": "#1f77b4", "Post-Monsoon": "#ff7f0e"}
 
                 if menu == "Descriptive Statistics":
@@ -235,3 +197,26 @@ if menu != "Select an option":
                     colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
                     st.pyplot(plt)
 
+# -----------------
+# Authors & Data Source (main page, always at bottom)
+# -----------------
+st.markdown("---")
+st.subheader("Authors & Data Source")
+st.markdown("""
+- **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
+- **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
+- **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
+
+**Data Source:** Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
+""")
+
+# -----------------
+# Upload your own file (optional, main page, always at bottom)
+# -----------------
+uploaded_file = st.file_uploader(
+    "Upload your own CSV/Excel (optional)",
+    type=["csv", "xls", "xlsx"]
+)
+if uploaded_file:
+    df = load_data(uploaded_file)
+    st.success("Your data is loaded! You can now use the selections above.")
