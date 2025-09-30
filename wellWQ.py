@@ -118,21 +118,6 @@ def filter_by_year(df, year_range):
     return df[(df['Year'] >= start) & (df['Year'] <= end)]
 
 # -----------------
-# Optional User File Upload at the End of Sidebar
-# -----------------
-st.sidebar.markdown("---")
-st.sidebar.subheader("Upload Your Own Data (Optional)")
-uploaded_file = st.sidebar.file_uploader(
-    "Drag & drop a CSV/Excel file here", 
-    type=["csv", "xls", "xlsx"]
-)
-if uploaded_file:
-    df_user = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
-    df_user['Date'] = pd.to_datetime(df_user['Date'], errors='coerce')
-    df_user['Year'] = df_user['Date'].dt.year
-    df = df_user.copy()  # replace default data with uploaded file
-
-# -----------------
 # Descriptive Statistics
 # -----------------
 if menu == "Descriptive Statistics":
@@ -237,3 +222,11 @@ elif menu == "Correlation Analysis":
         st.pyplot(plt)
     else:
         st.warning("No data available for the selected basin and year(s).")
+
+# -----------------
+# Sidebar: Optional User File Upload (Moved to Bottom)
+# -----------------
+st.sidebar.markdown("---")  # horizontal line
+st.sidebar.subheader("Upload Your Own Data (Optional)")
+uploaded_file = st.sidebar.file_uploader(
+    "Drag
