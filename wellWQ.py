@@ -45,14 +45,13 @@ st.image(
 # -----------------
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("WQ_Basin.csv")  
+    df = pd.read_csv("WQ_Basins.csv")  
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
 
 df_default = load_default_data()
 df = df_default.copy()  
-
 # -----------------
 # Extract Static Info
 # -----------------
@@ -63,15 +62,15 @@ exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
 parameters = [p for p in parameters if p not in exclude_cols]
 
 # -----------------
-# Sidebar Widgets Order
+# Sidebar Widgets
 # -----------------
 # Help button at top
 help_clicked = st.sidebar.button("Help?")
 
-# Main Menu
+# Main Menu with empty default
 menu = st.sidebar.selectbox(
     "Select an option",
-    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
 # Static analysis widgets
@@ -168,75 +167,74 @@ def filter_by_year(df, year_range):
     return df[(df['Year'] >= start) & (df['Year'] <= end)]
 
 # -----------------
-# Menu Options
+# Menu Options (only show if user selects)
 # -----------------
-if menu == "Descriptive Statistics":
-    st.subheader("Descriptive Statistics")
-    filtered = df[df['Basin'] == basin]
-    filtered = filter_by_year(filtered, year_range)
-    if not filtered.empty:
-        results = filtered.groupby(['Year', 'Season'])[param].agg(stat).reset_index()
-        st.write(f"{stat} of {param} for {basin} during selected year(s)")
-        st.dataframe(results)
-    else:
-        st.warning("No data available for the selected basin and year(s).")
+if menu != "Select an option":
+    if menu == "Descriptive Statistics":
+        st.subheader("Descriptive Statistics")
+        filtered = df[df['Basin'] == basin]
+        filtered = filter_by_year(filtered, year_range)
+        if not filtered.empty:
+            results = filtered.groupby(['Year', 'Season'])[param].agg(stat).reset_index()
+            st.write(f"{stat} of {param} for {basin} during selected year(s)")
+            st.dataframe(results)
+        else:
+            st.warning("No data available for the selected basin and year(s).")
 
-elif menu == "Visualizations":
-    st.subheader("Visualizations")
-    filtered = df[df['Basin'] == basin]
-    filtered = filter_by_year(filtered, year_range)
-    if not filtered.empty:
-        filtered['Year'] = filtered['Year'].astype(int)
-        if viz_type == "Bar Chart":
-            avg = filtered.groupby(['Year', 'Season'])[param].mean().reset_index()
-            plt.figure(figsize=(12,6))
-            sns.barplot(x="Year", y=param, hue="Season", data=avg)
-            plt.title(f"Bar Chart of {param} for {basin}")
-            plt.xticks(rotation=90)
-            st.pyplot(plt)
-        elif viz_type == "Scatter Plot":
-            plt.figure(figsize=(12,6))
-            sns.scatterplot(x="Year", y=param, hue="Season", data=filtered)
-            sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
-            plt.title(f"Scatter Plot of {param} for {basin}")
-            plt.xticks(rotation=90)
-            st.pyplot(plt)
-        elif viz_type == "Box Plot":
-            plt.figure(figsize=(10,6))
-            sns.boxplot(x="Season", y=param, data=filtered)
-            plt.title(f"Box Plot of {param} for {basin}")
-            st.pyplot(plt)
-        elif viz_type == "Line Graph":
-            plt.figure(figsize=(12,6))
-            sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered)
-            plt.title(f"Line Graph of {param} for {basin}")
-            plt.xticks(rotation=90)
-            st.pyplot(plt)
-    else:
-        st.warning("No data available for the selected basin and year(s).")
+    elif menu == "Visualizations":
+        st.subheader("Visualizations")
+        filtered = df[df['Basin'] == basin]
+        filtered = filter_by_year(filtered, year_range)
+        if not filtered.empty:
+            filtered['Year'] = filtered['Year'].astype(int)
+            if viz_type == "Bar Chart":
+                avg = filtered.groupby(['Year', 'Season'])[param].mean().reset_index()
+                plt.figure(figsize=(12,6))
+                sns.barplot(x="Year", y=param, hue="Season", data=avg)
+                plt.title(f"Bar Chart of {param} for {basin}")
+                plt.xticks(rotation=90)
+                st.pyplot(plt)
+            elif viz_type == "Scatter Plot":
+                plt.figure(figsize=(12,6))
+                sns.scatterplot(x="Year", y=param, hue="Season", data=filtered)
+                sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
+                plt.title(f"Scatter Plot of {param} for {basin}")
+                plt.xticks(rotation=90)
+                st.pyplot(plt)
+            elif viz_type == "Box Plot":
+                plt.figure(figsize=(10,6))
+                sns.boxplot(x="Season", y=param, data=filtered)
+                plt.title(f"Box Plot of {param} for {basin}")
+                st.pyplot(plt)
+            elif viz_type == "Line Graph":
+                plt.figure(figsize=(12,6))
+                sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered)
+                plt.title(f"Line Graph of {param} for {basin}")
+                plt.xticks(rotation=90)
+                st.pyplot(plt)
 
-elif menu == "Correlation Analysis":
-    st.subheader("Correlation Analysis")
-    filtered = df[df['Basin'] == basin]
-    filtered = filter_by_year(filtered, year_range)
-    if not filtered.empty:
-        corr_df = filtered[parameters].dropna()
-        corr = corr_df.corr(method=corr_method)
-        st.write(f"{corr_method.capitalize()} Correlation Matrix for {basin} (selected year(s))")
-        st.dataframe(corr)
+    elif menu == "Correlation Analysis":
+        st.subheader("Correlation Analysis")
+        filtered = df[df['Basin'] == basin]
+        filtered = filter_by_year(filtered, year_range)
+        if not filtered.empty:
+            corr_df = filtered[parameters].dropna()
+            corr = corr_df.corr(method=corr_method)
+            st.write(f"{corr_method.capitalize()} Correlation Matrix for {basin} (selected year(s))")
+            st.dataframe(corr)
 
-        plt.figure(figsize=(12,8))
-        ax = sns.heatmap(
-            corr,
-            annot=True,
-            cmap="coolwarm",
-            fmt=".2f",
-            vmin=-1, vmax=1,
-            cbar_kws={'label':'Correlation Strength'}
-        )
-        colorbar = ax.collections[0].colorbar
-        colorbar.set_ticks([-1,-0.5,0,0.5,1])
-        colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
-        st.pyplot(plt)
-    else:
-        st.warning("No data available for the selected basin and year(s).")
+            plt.figure(figsize=(12,8))
+            ax = sns.heatmap(
+                corr,
+                annot=True,
+                cmap="coolwarm",
+                fmt=".2f",
+                vmin=-1, vmax=1,
+                cbar_kws={'label':'Correlation Strength'}
+            )
+            colorbar = ax.collections[0].colorbar
+            colorbar.set_ticks([-1,-0.5,0,0.5,1])
+            colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
+            st.pyplot(plt)
+        else:
+            st.warning("No data available for the selected basin and year(s).")
