@@ -3,6 +3,28 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+# ----------------------------
+# Load CSV/Excel Data
+# ----------------------------
+import pandas as pd
+
+data_file = "water_quality.csv"  # Make sure this file is in your repo
+
+# Load CSV
+df = pd.read_csv(data_file)
+
+# Display table in app
+st.subheader("Water Quality Data")
+st.dataframe(df)
+
+# Download option
+st.download_button(
+    label="Download Data as CSV",
+    data=df.to_csv(index=False),
+    file_name="water_quality.csv",
+    mime="text/csv"
+)
+
 
 # -----------------
 # Page Configuration
@@ -233,3 +255,4 @@ if uploaded_file:
                 st.pyplot(plt)
             else:
                 st.warning("No data available for the selected basin and year(s).")
+
