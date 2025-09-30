@@ -62,7 +62,7 @@ def load_data(file):
 # -----------------
 # Sidebar buttons
 # -----------------
-help_clicked = st.sidebar.button("Help / Instructions")
+help_clicked = st.sidebar.button("Help / About")
 author_clicked = st.sidebar.button("Authors & Data Source")
 upload_clicked = st.sidebar.button("Upload Your Own Data")
 
@@ -196,3 +196,4 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
