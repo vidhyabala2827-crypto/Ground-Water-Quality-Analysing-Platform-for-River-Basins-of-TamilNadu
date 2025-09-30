@@ -52,6 +52,7 @@ def load_default_data():
 
 df_default = load_default_data()
 df = df_default.copy()  
+
 # -----------------
 # Extract Static Info
 # -----------------
@@ -64,13 +65,13 @@ parameters = [p for p in parameters if p not in exclude_cols]
 # -----------------
 # Sidebar Widgets Order
 # -----------------
-# Help at top
+# Help button at top
 help_clicked = st.sidebar.button("Help?")
 
 # Main Menu
 menu = st.sidebar.selectbox(
     "Select an option",
-    ["Descriptive Statistics", "Visualizations", "Correlation Analysis", "Authors & Data Source"]
+    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
 # Static analysis widgets
@@ -105,6 +106,10 @@ if uploaded_file:
     df_user['Year'] = df_user['Date'].dt.year
     df = df_user.copy()  # replace default data with uploaded file
 
+# Authors button at bottom
+st.sidebar.markdown("---")
+show_authors = st.sidebar.button("Authors & Data Source")
+
 # -----------------
 # Show Help
 # -----------------
@@ -138,6 +143,21 @@ if help_clicked:
         - Longitude  
         - Parameters (numeric columns like EC, TDS, Na, Ca, etc.)  
     - Uploaded data replaces default data for analysis and visualization  
+    """)
+
+# -----------------
+# Show Authors Info if clicked
+# -----------------
+if show_authors:
+    st.subheader("Authors")
+    st.markdown("""
+    - **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
+    - **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
+    - **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
+    """)
+    st.subheader("Data Source")
+    st.markdown("""
+    - Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
     """)
 
 # -----------------
@@ -220,18 +240,3 @@ elif menu == "Correlation Analysis":
         st.pyplot(plt)
     else:
         st.warning("No data available for the selected basin and year(s).")
-
-# -----------------
-# Authors & Data Source
-# -----------------
-elif menu == "Authors & Data Source":
-    st.subheader("Authors")
-    st.markdown("""
-    - **Er. B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
-    - **Dr. V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
-    - **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
-    """)
-    st.subheader("Data Source")
-    st.markdown("""
-    - Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
-    """)
