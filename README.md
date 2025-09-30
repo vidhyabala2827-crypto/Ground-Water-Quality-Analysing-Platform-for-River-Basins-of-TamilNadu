@@ -5,6 +5,9 @@
 - Dr. V. Ravikumar, Professor (SWCE), CWGS, TNAU, Coimbatore
 - JC Kasimani, CEO & Co-Founder, Infolayer, UK.
 
+## Data Source
+- Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India.
+
 ## Description
 This app visualizes water quality data and performs analysis for selected regions.
 
