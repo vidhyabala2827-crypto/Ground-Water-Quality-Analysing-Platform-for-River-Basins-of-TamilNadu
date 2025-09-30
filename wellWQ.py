@@ -41,25 +41,17 @@ st.image(
 )
 
 # -----------------
-# Load Default Data
+# Load User Data (No default)
 # -----------------
 @st.cache_data
-def load_default_data():
-    df = pd.read_csv("WQ_Basin.csv")  
+def load_data(file):
+    if file.name.endswith('.csv'):
+        df = pd.read_csv(file)
+    else:
+        df = pd.read_excel(file)
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
-
-df_default = load_default_data()
-df = df_default.copy()  
-# -----------------
-# Extract Static Info
-# -----------------
-basins = df['Basin'].dropna().unique()
-years = np.sort(df['Year'].dropna().astype(int))
-parameters = df.select_dtypes(include=[np.number]).columns.tolist()
-exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
-parameters = [p for p in parameters if p not in exclude_cols]
 
 # -----------------
 # Sidebar Widgets
@@ -67,43 +59,24 @@ parameters = [p for p in parameters if p not in exclude_cols]
 # Help button at top
 help_clicked = st.sidebar.button("Help?")
 
-# Main Menu with empty default
+# Main Menu
 menu = st.sidebar.selectbox(
     "Select an option",
     ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
-# Static analysis widgets
-basin = st.sidebar.selectbox("Select Basin", basins)
-year_range = st.sidebar.slider(
-    "Select Year Range",
-    min_value=int(years.min()),
-    max_value=int(years.max()),
-    value=(int(years.min()), int(years.max())),
-    step=1
-)
-param = st.sidebar.selectbox("Select Parameter", parameters)
-stat = st.sidebar.multiselect("Select Statistics", ["mean", "median", "min", "max", "std", "count"], default=["mean"])
-viz_type = st.sidebar.selectbox("Select Visualization", ["Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"])
-corr_method = st.sidebar.radio("Select Correlation Method", ["pearson", "spearman"])
-
-# Divider
-st.sidebar.markdown("---")
-
 # Upload widget at bottom
+st.sidebar.markdown("---")
 st.sidebar.subheader("Upload Your Own Data (Optional)")
 uploaded_file = st.sidebar.file_uploader(
     "Drag & drop a CSV/Excel file here", 
     type=["csv", "xls", "xlsx"]
 )
+
 if uploaded_file:
-    if uploaded_file.name.endswith('.csv'):
-        df_user = pd.read_csv(uploaded_file)
-    else:
-        df_user = pd.read_excel(uploaded_file)
-    df_user['Date'] = pd.to_datetime(df_user['Date'], errors='coerce')
-    df_user['Year'] = df_user['Date'].dt.year
-    df = df_user.copy()  # replace default data with uploaded file
+    df = load_data(uploaded_file)
+else:
+    df = None
 
 # Authors button at bottom
 st.sidebar.markdown("---")
@@ -141,7 +114,6 @@ if help_clicked:
         - Latitude  
         - Longitude  
         - Parameters (numeric columns like EC, TDS, Na, Ca, etc.)  
-    - Uploaded data replaces default data for analysis and visualization  
     """)
 
 # -----------------
@@ -160,16 +132,38 @@ if show_authors:
     """)
 
 # -----------------
-# Year Filter Function
+# Only show analysis if user uploaded data and selected a menu option
 # -----------------
-def filter_by_year(df, year_range):
-    start, end = year_range
-    return df[(df['Year'] >= start) & (df['Year'] <= end)]
+if df is not None and menu != "Select an option":
+    # Extract dynamic info
+    basins = df['Basin'].dropna().unique()
+    years = np.sort(df['Year'].dropna().astype(int))
+    parameters = df.select_dtypes(include=[np.number]).columns.tolist()
+    exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
+    parameters = [p for p in parameters if p not in exclude_cols]
 
-# -----------------
-# Menu Options (only show if user selects)
-# -----------------
-if menu != "Select an option":
+    # Dynamic controls
+    basin = st.sidebar.selectbox("Select Basin", basins)
+    year_range = st.sidebar.slider(
+        "Select Year Range",
+        min_value=int(years.min()),
+        max_value=int(years.max()),
+        value=(int(years.min()), int(years.max())),
+        step=1
+    )
+    param = st.sidebar.selectbox("Select Parameter", parameters)
+    stat = st.sidebar.multiselect("Select Statistics", ["mean", "median", "min", "max", "std", "count"], default=["mean"])
+    viz_type = st.sidebar.selectbox("Select Visualization", ["Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"])
+    corr_method = st.sidebar.radio("Select Correlation Method", ["pearson", "spearman"])
+
+    # Filter by year
+    def filter_by_year(df, year_range):
+        start, end = year_range
+        return df[(df['Year'] >= start) & (df['Year'] <= end)]
+
+    # -----------------
+    # Descriptive Statistics
+    # -----------------
     if menu == "Descriptive Statistics":
         st.subheader("Descriptive Statistics")
         filtered = df[df['Basin'] == basin]
@@ -181,6 +175,9 @@ if menu != "Select an option":
         else:
             st.warning("No data available for the selected basin and year(s).")
 
+    # -----------------
+    # Visualizations
+    # -----------------
     elif menu == "Visualizations":
         st.subheader("Visualizations")
         filtered = df[df['Basin'] == basin]
@@ -213,6 +210,9 @@ if menu != "Select an option":
                 plt.xticks(rotation=90)
                 st.pyplot(plt)
 
+    # -----------------
+    # Correlation Analysis
+    # -----------------
     elif menu == "Correlation Analysis":
         st.subheader("Correlation Analysis")
         filtered = df[df['Basin'] == basin]
@@ -239,3 +239,8 @@ if menu != "Select an option":
         else:
             st.warning("No data available for the selected basin and year(s).")
 
+# -----------------
+# If no data uploaded yet
+# -----------------
+elif df is None:
+    st.warning("Please upload a CSV or Excel file to start analysis")
