@@ -29,10 +29,6 @@ st.markdown("<h1 style='text-align: center; color: #003366;'>Ground water qualit
 st.markdown("<h4 style='text-align: center; font-style: italic; color: #0059b3;'>"
     "Project Work done under ICAR – AICRP – IWM, TNAU, Coimbatore."
     "</h4>", unsafe_allow_html=True)
-st.image(
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80",
-    use_container_width=True
-)
 
 # -----------------
 # Load default data
@@ -197,5 +193,6 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
