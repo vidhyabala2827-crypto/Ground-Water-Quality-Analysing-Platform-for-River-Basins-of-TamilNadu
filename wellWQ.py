@@ -278,7 +278,7 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
 if author_clicked:
     st.subheader("Authors & Data Source")
     st.markdown("""
-- **B. Sridhanabharathi**, PhD Scholar (SWCE), TNAU  
+- **B. Sridhanabharathi**, PhD Scholar (SWCE), TNAU, E-Mail ID - vidhyabala2827@gmail.com  
 - **V. Ravikumar**, Professor (SWCE), TNAU  
 **Data Source:** CGWB, Chennai
 """)
@@ -291,3 +291,4 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
