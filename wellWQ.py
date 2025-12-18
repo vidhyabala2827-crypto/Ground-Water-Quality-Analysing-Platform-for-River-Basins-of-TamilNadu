@@ -322,7 +322,9 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
             corr = filtered[parameters].corr()
             plt.figure(figsize=(12, 8))
             sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+            plt.yticks(rotation=0)
             st.pyplot(plt)
+            
 
 # =========================================================
 # AUTHORS
@@ -343,6 +345,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
