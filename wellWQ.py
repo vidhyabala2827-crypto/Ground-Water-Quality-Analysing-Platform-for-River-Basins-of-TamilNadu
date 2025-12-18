@@ -228,10 +228,24 @@ if menu == "Water Quality Indicators":
                     "Unsuitable")
         df_wqi["WQI_Category"] = df_wqi["WQI"].apply(classify)
 
+    
     # ---- Clean & show table ----
-    df_display = df_wqi.drop(columns=[c for c in df_wqi.columns if c.startswith("q_") or c.startswith("W_")], errors="ignore")
-    index_cols = [i for i in indicators_options if i in df_display.columns and i != "WQI"]
-    ordered = [c for c in df_display.columns if c not in index_cols + ["WQI","WQI_Category"]] + index_cols + ["WQI","WQI_Category"]
+df_display = df_wqi.drop(
+    columns=[c for c in df_wqi.columns if c.startswith("q_") or c.startswith("W_")],
+    errors="ignore"
+)
+index_cols = [i for i in indicators_options if i in df_display.columns and i != "WQI"]
+ordered = [c for c in df_display.columns if c not in index_cols + ["WQI","WQI_Category"]] + index_cols + ["WQI","WQI_Category"]
+
+# ===== ROUND WATER QUALITY INDICATORS (DISPLAY ONLY) =====
+round_cols = ["SAR", "RSC", "Na%", "PI", "MH", "KR", "PS", "WQI"]
+
+for col in round_cols:
+    if col in df_display.columns:
+        df_display[col] = df_display[col].round(2)
+# =======================================================
+
+st.dataframe(df_display[ordered])
     st.dataframe(df_display[ordered])
 
     st.download_button("Download Full Data", df_display.to_csv(index=False).encode("utf-8"), "WQ_full_with_WQI.csv")
@@ -308,6 +322,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
