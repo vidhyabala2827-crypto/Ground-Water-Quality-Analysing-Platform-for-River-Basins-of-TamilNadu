@@ -323,16 +323,16 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
                     x="Season", y=param, data=filtered_plot
                 )
 
-           elif viz == "Line Graph":
+            elif viz == "Line Graph":
                 sns.lineplot(
                     x="Year", y=param, hue="Season",
                     marker="o", data=filtered_plot
                 )
 
-           plt.xlabel("Year")
-           plt.ylabel(ylabel)
-           plt.xticks(rotation=90)
-           st.pyplot(plt)
+            plt.xlabel("Year")
+            plt.ylabel(ylabel)
+            plt.xticks(rotation=90)
+            st.pyplot(plt)
 
 
       elif menu == "Correlation Analysis":
@@ -378,6 +378,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
