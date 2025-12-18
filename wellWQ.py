@@ -230,7 +230,7 @@ if menu == "Water Quality Indicators":
 
     for col in round_cols:
         if col in df_display.columns:
-            df_display[col] = df_display[col].round(2)
+            df_display[col] = df_display[col].round(1)
 
 
     st.dataframe(df_display[ordered])
@@ -377,6 +377,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
