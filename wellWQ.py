@@ -63,15 +63,21 @@ if menu == "Select an option":
     st.markdown("""
     <div style="text-align: justify; font-size: 17px; line-height: 1.6;">
     Groundwater quality data at well level were obtained from the Central Ground Water Board (CGWB),
-    Chennai Regional Office and the project is done under the ICAR – AICRP – Integrated Water Management (IWM) programme,
+    Chennai Regional Office and the project is dne under the ICAR – AICRP – Integrated Water Management (IWM) programme,
     TNAU, Coimbatore.
     <br><br>
     This platform is developed to facilitate basin-wise assessment of groundwater quality across
     major river basins of Tamil Nadu using long-term monitoring data. It enables users to explore
     spatial and temporal variations in key water quality parameters through interactive statistical
-    summaries, visualizations, correlation analysis, and water quality indices.
+    summaries, visualizations, and correlation analysis.
+    <br><br>
+    The platform is intended to support researchers, planners, and students in understanding
+    groundwater quality trends and their implications for sustainable water resources management.
     </div>
     """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
 
     st.image(
         "image.png",
@@ -278,3 +284,4 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
