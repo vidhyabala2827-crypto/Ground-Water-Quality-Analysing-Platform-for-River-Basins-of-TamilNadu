@@ -291,7 +291,7 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
     elif menu == "Visualizations":
         st.subheader("Visualizations")
         plt.figure(figsize=(12,6))
-        sns.lineplot(data=filtered, x="Year", y=param(mg/l), hue="Season", marker="o")
+        sns.lineplot(data=filtered, x="Year", y=param&"(mg/l)", hue="Season", marker="o")
         st.pyplot(plt)
 
     elif menu == "Correlation Analysis":
@@ -321,6 +321,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
