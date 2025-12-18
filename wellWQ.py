@@ -76,7 +76,7 @@ if menu == "Select an option":
 # =========================================================
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("Basin_WQ.csv")
+    df = pd.read_csv("WQ_Basins.csv")
     df["Date"] = df["Date"].astype(str)
 
     # 🔥 HARD YEAR EXTRACTION
@@ -350,3 +350,4 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
