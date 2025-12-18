@@ -35,7 +35,7 @@ st.markdown("<h4 style='text-align: center; font-style: italic; color: #0059b3;'
 # -----------------
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("WQ_Basin.csv")
+    df = pd.read_csv("WQ_Basins.csv")
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
@@ -193,6 +193,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
