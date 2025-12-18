@@ -65,7 +65,7 @@ upload_clicked = st.sidebar.button("Upload Data(Optional)")
 
 menu = st.sidebar.selectbox(
     "Select Option",
-    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
 # -----------------
@@ -95,7 +95,7 @@ if help_clicked:
 # -----------------
 if menu != "Select an option":
     basins = df['Basin'].dropna().unique()
-    basin = st.sidebar.selectbox("Select Basin", ["Select a Basin"] + list(basins))
+    basin = st.sidebar.selectbox("Select Basin",  list(basins))
     if basin != "Select a Basin":
         years = np.sort(df['Year'].dropna().astype(int))
         year_range = st.sidebar.slider(
@@ -193,6 +193,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
