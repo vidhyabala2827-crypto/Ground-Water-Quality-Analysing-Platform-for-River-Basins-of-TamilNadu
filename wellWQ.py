@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # PAGE CONFIG
 # =========================================================
 st.set_page_config(
-    page_title="Ground Water Quality Analysis – River Basins of Tamil Nadu",
+    page_title="Ground Water Quality Analysis of Tamil Nadu River Basins",
     layout="wide"
 )
 
@@ -22,7 +22,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# SIDEBAR CONTROLS
+# SIDEBAR CONTROLS (DEFINE ONCE)
 # =========================================================
 help_clicked = st.sidebar.button("Help / About")
 author_clicked = st.sidebar.button("Authors & Data Source")
@@ -35,12 +35,12 @@ menu = st.sidebar.selectbox(
         "Descriptive Statistics",
         "Visualizations",
         "Correlation Analysis",
-        "Water Quality Indicators"
+        "Water Quality Indices"
     ]
 )
 
 # =========================================================
-# TITLE
+# APP TITLE
 # =========================================================
 st.markdown(
     "<h1 style='text-align:center; color:#003366;'>"
@@ -57,40 +57,29 @@ st.markdown(
 )
 
 # =========================================================
-# INTRO
+# INTRO SECTION
 # =========================================================
 if menu == "Select an option":
     st.markdown("""
     <div style="text-align: justify; font-size: 17px; line-height: 1.6;">
     Groundwater quality data at well level were obtained from the Central Ground Water Board (CGWB),
-    Chennai Regional Office and the project is dne under the ICAR – AICRP – Integrated Water Management (IWM) programme,
-    TNAU, Coimbatore.
+    Chennai Regional Office under the ICAR – AICRP – Integrated Water Management (IWM) programme.
     <br><br>
-    This platform is developed to facilitate basin-wise assessment of groundwater quality across
-    major river basins of Tamil Nadu using long-term monitoring data. It enables users to explore
-    spatial and temporal variations in key water quality parameters through interactive statistical
-    summaries, visualizations, and correlation analysis.
-    <br><br>
-    The platform is intended to support researchers, planners, and students in understanding
-    groundwater quality trends and their implications for sustainable water resources management.
+    This platform enables basin-wise assessment of groundwater quality across major river basins
+    of Tamil Nadu using long-term monitoring data. It supports statistical analysis, visualization,
+    correlation assessment, and detailed calculation of water quality indices including WQI.
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    st.image(
-        "image.png",
-        caption="Spatial distribution of groundwater quality across river basins of Tamil Nadu",
-        use_container_width=True
-    )
-
 # =========================================================
-# LOAD DATA – YEAR HARD FIX
+# LOAD DATA – YEAR HARD FIX (UP TO 2022)
 # =========================================================
 @st.cache_data
 def load_default_data():
-    df = pd.read_csv("WQ_Basins.csv")
+    df = pd.read_csv("Basin_WQ.csv")
     df["Date"] = df["Date"].astype(str)
+
+    # 🔥 HARD YEAR EXTRACTION
     df["Year"] = (
         df["Date"]
         .str.extract(r"(19\d{2}|20\d{2})")[0]
@@ -122,19 +111,81 @@ if help_clicked:
     st.subheader("Help / About")
     st.markdown("""
 - **Descriptive Statistics** – Summary statistics  
-- **Visualizations** – Temporal and seasonal trends  
-- **Correlation Analysis** – Relationship between parameters  
-- **Water Quality Indicators** – SAR, RSC, Na%, PI, MH, KR, PS and WQI
+- **Visualizations** – Seasonal and temporal trends  
+- **Correlation Analysis** – Inter-parameter relationships  
+- **Water Quality Indices** – SAR, RSC, Na%, PI, MH, KR, PS, WQI (Horton method)
 """)
 
 # =========================================================
-# WATER QUALITY INDICATORS MODULE
+# WATER QUALITY INDICES (EXACT MODULE YOU SHARED)
 # =========================================================
-if menu == "Water Quality Indicators":
+if menu == "Water Quality Indices":
 
-    st.subheader("Water Quality Indicators & Water Quality Index (WQI)")
+    st.subheader("Water Quality Indices")
+    st.markdown(
+        "If water quality parameters are in **mg/L**, conversion to **meq/L** "
+        "is handled internally for index calculations."
+    )
 
-    unit_choice = st.radio("Input unit of chemical parameters:", ["mg/L", "meq/L"], horizontal=True)
+    # ---------- FORMULAS & DEFINITIONS ----------
+    with st.expander("Show formulas and definitions", expanded=False):
+
+        st.markdown("### **1. Sodium Adsorption Ratio (SAR)**")
+        st.latex(r"SAR = \frac{Na^+}{\sqrt{\frac{Ca^{2+} + Mg^{2+}}{2}}}")
+        st.markdown("Indicates sodium hazard. High SAR reduces soil permeability.")
+
+        st.markdown("---")
+        st.markdown("### **2. Residual Sodium Carbonate (RSC)**")
+        st.latex(r"RSC = (CO_3^{2-} + HCO_3^{-}) - (Ca^{2+} + Mg^{2+})")
+        st.markdown("High RSC suggests carbonate/bicarbonate hazard.")
+
+        st.markdown("---")
+        st.markdown("### **3. Sodium Percentage (Na%)**")
+        st.latex(r"\%Na = \frac{Na^+ + K^+}{Na^+ + K^+ + Ca^{2+} + Mg^{2+}} \times 100")
+        st.markdown("Indicates sodium dominance. High Na% affects soil structure.")
+
+        st.markdown("---")
+        st.markdown("### **4. Permeability Index (PI)**")
+        st.latex(r"PI = \frac{Na^+ + \sqrt{HCO_3^-}}{Ca^{2+} + Mg^{2+} + Na^+} \times 100")
+        st.markdown("Indicates long-term impact on soil permeability.")
+
+        st.markdown("---")
+        st.markdown("### **5. Magnesium Hazard (MH)**")
+        st.latex(r"MH = \frac{Mg^{2+}}{Ca^{2+} + Mg^{2+}} \times 100")
+        st.markdown("High MH can reduce crop yield.")
+
+        st.markdown("---")
+        st.markdown("### **6. Kelly's Ratio (KR)**")
+        st.latex(r"KR = \frac{Na^+}{Ca^{2+} + Mg^{2+}}")
+        st.markdown("KR > 1 indicates unsuitability for irrigation.")
+
+        st.markdown("---")
+        st.markdown("### **7. Potential Salinity (PS)**")
+        st.latex(r"PS = Cl^- + \sqrt{SO_4^{2-}}")
+        st.markdown("Represents salinity hazard.")
+
+        st.markdown("---")
+        st.markdown("## 🔷 Water Quality Index (WQI) — Horton Method")
+        st.latex(r"WQI = \frac{\sum (q_n \cdot W_n)}{\sum W_n}")
+        st.latex(r"q_n = \left( \frac{V_n - V_{id}}{S_n - V_{id}} \right) \times 100")
+        st.latex(r"W_n = \frac{k}{S_n}")
+        st.latex(r"k = \frac{1}{\sum (1 / S_n)}")
+
+        Sn_table = pd.DataFrame({
+            "Index": ["SAR", "RSC", "Na%", "PI", "MH", "KR", "PS"],
+            "Standard Limit (Sₙ)": [10, 2.5, 60, 25, 50, 1, 3]
+        })
+        st.dataframe(Sn_table, hide_index=True)
+
+    # ---------- USER CONTROLS ----------
+    unit_choice = st.radio("Select input unit:", ["meq/L", "mg/L"], index=0)
+
+    indices_options = ["SAR", "RSC", "Na%", "PI", "MH", "KR", "PS", "WQI"]
+    selected_indices = st.multiselect(
+        "Select indices to display:",
+        indices_options,
+        default=indices_options
+    )
 
     df_wqi = df.copy()
 
@@ -143,97 +194,137 @@ if menu == "Water Quality Indicators":
         "HCO3": 61.0, "CO3": 30.0, "Cl": 35.45, "SO4": 48.0
     }
 
-    def to_meq(col):
-        if col not in df_wqi.columns:
+    def to_meq(ion):
+        if ion not in df_wqi.columns:
             return None
-        x = pd.to_numeric(df_wqi[col], errors="coerce")
-        return x / eq[col] if unit_choice == "mg/L" else x
+        x = pd.to_numeric(df_wqi[ion], errors="coerce")
+        return x / eq[ion] if unit_choice == "mg/L" else x
 
-    Na, Ca, Mg = to_meq("Na"), to_meq("Ca"), to_meq("Mg")
-    K = to_meq("K")
-    HCO3, CO3 = to_meq("HCO3"), to_meq("CO3")
-    Cl, SO4 = to_meq("Cl"), to_meq("SO4")
+    need = {
+        "SAR": ["Na", "Ca", "Mg"],
+        "RSC": ["CO3", "HCO3", "Ca", "Mg"],
+        "Na%": ["Na", "K", "Ca", "Mg"],
+        "PI": ["Na", "HCO3", "Ca", "Mg"],
+        "MH": ["Ca", "Mg"],
+        "KR": ["Na", "Ca", "Mg"],
+        "PS": ["Cl", "SO4"]
+    }
 
-    df_wqi["SAR"] = Na / np.sqrt((Ca + Mg) / 2)
-    df_wqi["RSC"] = (CO3 + HCO3) - (Ca + Mg)
-    df_wqi["Na%"] = ((Na + K) / (Na + K + Ca + Mg)) * 100
-    df_wqi["PI"] = ((Na + np.sqrt(HCO3)) / (Ca + Mg + Na)) * 100
-    df_wqi["MH"] = (Mg / (Ca + Mg)) * 100
-    df_wqi["KR"] = Na / (Ca + Mg)
-    df_wqi["PS"] = Cl + np.sqrt(SO4)
+    for idx in ["SAR", "RSC", "Na%", "PI", "MH", "KR", "PS"]:
+        if idx not in selected_indices or idx in df_wqi.columns:
+            continue
+        if any(i not in df_wqi.columns for i in need[idx]):
+            continue
 
-    # ---- WQI (Horton method) ----
-    Sn = {"SAR":10, "RSC":2.5, "Na%":60, "PI":25, "MH":50, "KR":1, "PS":3}
-    k = 1 / sum(1 / v for v in Sn.values())
-    W = {i: k / Sn[i] for i in Sn}
+        Na, Ca, Mg, K = to_meq("Na"), to_meq("Ca"), to_meq("Mg"), to_meq("K")
+        HCO3, CO3, Cl, SO4 = to_meq("HCO3"), to_meq("CO3"), to_meq("Cl"), to_meq("SO4")
 
-    df_wqi["WQI"] = sum(((df_wqi[i] / Sn[i]) * 100) * W[i] for i in Sn) / sum(W.values())
+        if idx == "SAR":
+            df_wqi["SAR"] = Na / np.sqrt((Ca + Mg) / 2)
+        elif idx == "RSC":
+            df_wqi["RSC"] = (CO3 + HCO3) - (Ca + Mg)
+        elif idx == "Na%":
+            df_wqi["Na%"] = ((Na + K) / (Na + K + Ca + Mg)) * 100
+        elif idx == "PI":
+            df_wqi["PI"] = ((Na + np.sqrt(HCO3)) / (Ca + Mg + Na)) * 100
+        elif idx == "MH":
+            df_wqi["MH"] = (Mg / (Ca + Mg)) * 100
+        elif idx == "KR":
+            df_wqi["KR"] = Na / (Ca + Mg)
+        elif idx == "PS":
+            df_wqi["PS"] = Cl + np.sqrt(SO4)
 
-    df_wqi["WQI_Category"] = pd.cut(
-        df_wqi["WQI"],
-        bins=[0, 25, 50, 75, 100, 1e6],
-        labels=["Excellent", "Good", "Poor", "Very Poor", "Unsuitable"]
+    # ---------- WQI ----------
+    Sn = {"SAR":10,"RSC":2.5,"Na%":60,"PI":25,"MH":50,"KR":1,"PS":3}
+    usable = [i for i in Sn if i in df_wqi.columns]
+
+    if usable:
+        k = 1 / sum(1 / Sn[i] for i in usable)
+        W = {i: k / Sn[i] for i in usable}
+
+        for i in usable:
+            df_wqi[f"q_{i}"] = (df_wqi[i] / Sn[i]) * 100
+            df_wqi[f"W_{i}"] = df_wqi[f"q_{i}"] * W[i]
+
+        df_wqi["WQI"] = (
+            df_wqi[[f"W_{i}" for i in usable]].sum(axis=1)
+            / sum(W.values())
+        )
+
+        df_wqi["WQI_Category"] = df_wqi["WQI"].apply(
+            lambda x:
+            "Excellent" if x <= 25 else
+            "Good" if x <= 50 else
+            "Poor" if x <= 75 else
+            "Very Poor" if x <= 100 else
+            "Unsuitable"
+        )
+
+    df_display = df_wqi.drop(
+        columns=[c for c in df_wqi.columns if c.startswith("q_") or c.startswith("W_")],
+        errors="ignore"
     )
 
-    show_cols = [
-        c for c in ["Basin", "Year", "SAR", "RSC", "Na%", "PI", "MH", "KR", "PS", "WQI", "WQI_Category"]
-        if c in df_wqi.columns
-    ]
-
-    st.dataframe(df_wqi[show_cols])
-
+    st.dataframe(df_display)
     st.download_button(
-        "Download Water Quality Indicators",
-        df_wqi[show_cols].to_csv(index=False).encode("utf-8"),
-        "Water_Quality_Indicators.csv"
+        "Download Full Data with WQI",
+        df_display.to_csv(index=False).encode("utf-8"),
+        "WQ_full_with_WQI.csv"
     )
 
-# =========================================================
-# OTHER ANALYSIS MODULES
-# =========================================================
-if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
+    st.stop()
 
-    basins = sorted(df["Basin"].dropna().unique())
+# =========================================================
+# OTHER MODULES (STATS / VIZ / CORR)
+# =========================================================
+if menu != "Select an option":
+
+    basins = df["Basin"].dropna().unique()
     basin = st.sidebar.selectbox("Select Basin", basins)
 
-    years = sorted(df["Year"].dropna().unique())
-    year_range = st.sidebar.slider(
+    years = sorted(df["Year"].dropna().astype(int))
+    yr = st.sidebar.slider(
         "Select Year Range",
-        min_value=int(min(years)),
-        max_value=int(max(years)),
-        value=(int(min(years)), int(max(years)))
+        int(min(years)),
+        int(max(years)),
+        (int(min(years)), int(max(years)))
     )
 
     parameters = [
         c for c in df.select_dtypes(include=[np.number]).columns
-        if c not in ["Year", "Latitude", "Longitude"]
+        if c not in ["Latitude", "Longitude", "Year"]
     ]
 
     param = st.sidebar.selectbox("Select Parameter", parameters)
 
     filtered = df[
         (df["Basin"] == basin) &
-        (df["Year"] >= year_range[0]) &
-        (df["Year"] <= year_range[1])
+        (df["Year"] >= yr[0]) &
+        (df["Year"] <= yr[1])
     ]
 
     if menu == "Descriptive Statistics":
         st.subheader("Descriptive Statistics")
-        st.dataframe(
-            filtered.groupby(["Year", "Season"])[param]
-            .agg(["mean", "median", "min", "max", "std", "count"])
-            .reset_index()
+        stat = st.sidebar.multiselect(
+            "Select Statistics",
+            ["mean", "median", "min", "max", "std", "count"]
         )
+        if stat:
+            st.dataframe(
+                filtered.groupby(["Year", "Season"])[param]
+                .agg(stat)
+                .reset_index()
+            )
 
     elif menu == "Visualizations":
-        st.subheader("Visualizations")
+        st.subheader("Visualization")
         plt.figure(figsize=(12,6))
         sns.lineplot(data=filtered, x="Year", y=param, hue="Season", marker="o")
         st.pyplot(plt)
 
     elif menu == "Correlation Analysis":
-        st.subheader("Correlation Analysis")
-        corr = filtered[parameters].corr()
+        st.subheader("Correlation Matrix")
+        corr = filtered[parameters].dropna().corr()
         plt.figure(figsize=(12,8))
         sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
         st.pyplot(plt)
@@ -244,18 +335,18 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
 if author_clicked:
     st.subheader("Authors & Data Source")
     st.markdown("""
-- **B. Sridhanabharathi**, PhD Scholar, TNAU  
-- **V. Ravikumar**, Professor, TNAU  
+- **B. Sridhanabharathi**, PhD Scholar (SWCE)  
+- **V. Ravikumar**, Professor (SWCE)  
+- **JC Kasimani**, CEO & Co-Founder, Infolayer UK  
 
-**Data Source:** Central Ground Water Board (CGWB), Government of India
+**Data Source:** CGWB, Chennai
 """)
 
 # =========================================================
 # UPLOAD
 # =========================================================
 if upload_clicked:
-    uploaded_file = st.file_uploader("Upload CSV / Excel", ["csv", "xls", "xlsx"])
-    if uploaded_file:
-        df = load_data(uploaded_file)
-        st.success("Data loaded successfully.")
-
+    file = st.file_uploader("Upload CSV / Excel", ["csv", "xls", "xlsx"])
+    if file:
+        df = load_data(file)
+        st.success("File uploaded successfully.")
