@@ -29,6 +29,25 @@ st.markdown("<h1 style='text-align: center; color: #003366;'>Ground water qualit
 st.markdown("<h4 style='text-align: center; font-style: italic; color: #0059b3;'>"
     "Project Work done under ICAR – AICRP – IWM, TNAU, Coimbatore."
     "</h4>", unsafe_allow_html=True)
+# -----------------
+# Intro / Welcome Section (Shown only at start)
+# -----------------
+if menu == "Select an option":
+    st.markdown("""
+    <div style="text-align: justify; font-size: 17px; line-height: 1.6;">
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.image(
+        "intro_image.jpg",
+        caption="Groundwater Monitoring & Analysis",
+        use_container_width=True
+    )
 
 # -----------------
 # Load default data
@@ -193,6 +212,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
