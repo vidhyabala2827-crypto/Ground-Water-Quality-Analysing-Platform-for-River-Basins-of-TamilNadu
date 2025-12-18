@@ -29,7 +29,7 @@ upload_clicked = st.sidebar.button("Upload Data (Optional)")
 
 menu = st.sidebar.selectbox(
     "Select Option",
-    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
 # -----------------
@@ -98,18 +98,6 @@ def load_data(file):
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df['Year'] = df['Date'].dt.year
     return df
-
-# -----------------
-# Sidebar buttons
-# -----------------
-help_clicked = st.sidebar.button("Help / About")
-author_clicked = st.sidebar.button("Authors & Data Source")
-upload_clicked = st.sidebar.button("Upload Data(Optional)")
-
-menu = st.sidebar.selectbox(
-    "Select Option",
-    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
-)
 
 # -----------------
 # Display help if clicked
@@ -236,6 +224,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
