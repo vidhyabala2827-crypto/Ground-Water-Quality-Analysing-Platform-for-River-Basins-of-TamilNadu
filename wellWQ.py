@@ -284,14 +284,14 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
         st.subheader("Descriptive Statistics")
         st.dataframe(
             filtered.groupby(["Year", "Season"])[param]
-            .agg(["mean", "median", "min", "max", "std", "count"])
+            .agg(["Mean", "Median", "Minimum_value", "Maximum_value", "Standard deviation"])
             .reset_index()
         )
 
     elif menu == "Visualizations":
         st.subheader("Visualizations")
         plt.figure(figsize=(12,6))
-        sns.lineplot(data=filtered, x="Year", y=param, hue="Season", marker="o")
+        sns.lineplot(data=filtered, x="Year", y=param(mg/l), hue="Season", marker="o")
         st.pyplot(plt)
 
     elif menu == "Correlation Analysis":
@@ -321,6 +321,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
