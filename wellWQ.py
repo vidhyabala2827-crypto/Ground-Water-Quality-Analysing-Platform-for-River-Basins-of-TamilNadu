@@ -108,7 +108,7 @@ if menu != "Select an option":
         parameters = df.select_dtypes(include=[np.number]).columns.tolist()
         exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
         parameters = [p for p in parameters if p not in exclude_cols]
-        param = st.sidebar.selectbox("Select Parameter", ["Select a Parameter"] + parameters)
+        param = st.sidebar.selectbox("Select Parameter", parameters)
 
         if param != "Select a Parameter":
             filtered = df[(df['Basin']==basin) & (df['Year']>=year_range[0]) & (df['Year']<=year_range[1])]
@@ -193,6 +193,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
