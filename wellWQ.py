@@ -324,7 +324,7 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
 
             elif viz == "Scatter Plot":
                 sns.scatterplot(
-                    x="Year", y=param, hue="Season", data=filtered_plot
+                    x="Year", y=param, hue="Season", data=filtered_plot, marker="x"
                 )
                 sns.regplot(
                     x="Year", y=param,
@@ -392,6 +392,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
