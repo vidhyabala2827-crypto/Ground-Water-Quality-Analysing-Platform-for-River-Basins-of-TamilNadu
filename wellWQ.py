@@ -67,7 +67,7 @@ if menu == "Select an option":
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.image(
-        "intro_image.jpg",
+        "image.png",
         caption="Groundwater Monitoring & Analysis",
         use_container_width=True
     )
@@ -236,6 +236,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
