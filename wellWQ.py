@@ -4,17 +4,17 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# -----------------
-# Page Configuration
-# -----------------
+# =========================================================
+# PAGE CONFIG
+# =========================================================
 st.set_page_config(
-    page_title="Ground Water Quality Analysis of Tamil Nadu River Basins",
+    page_title="Ground Water Quality Analysis – River Basins of Tamil Nadu",
     layout="wide"
 )
 
-# -----------------
-# Sidebar Style
-# -----------------
+# =========================================================
+# SIDEBAR STYLE
+# =========================================================
 st.markdown("""
 <style>
 [data-testid="stSidebar"] {background-color: #e6f2ff;}
@@ -22,7 +22,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # =========================================================
-# SIDEBAR CONTROLS (DEFINE ONCE — VERY IMPORTANT)
+# SIDEBAR CONTROLS
 # =========================================================
 help_clicked = st.sidebar.button("Help / About")
 author_clicked = st.sidebar.button("Authors & Data Source")
@@ -34,64 +34,65 @@ menu = st.sidebar.selectbox(
 )
 
 # =========================================================
-# APP TITLE
+# TITLE
 # =========================================================
 st.markdown(
-    "<h1 style='text-align: center; color: #003366;'>"
+    "<h1 style='text-align:center; color:#003366;'>"
     "Ground Water Quality Analysis – River Basins of Tamil Nadu"
     "</h1>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<h4 style='text-align: center; font-style: italic; color: #0059b3;'>"
+    "<h4 style='text-align:center; font-style:italic; color:#0059b3;'>"
     "Project Work done under ICAR – AICRP – IWM, TNAU, Coimbatore."
     "</h4>",
     unsafe_allow_html=True
 )
 
 # =========================================================
-# INTRO SECTION (ONLY WHEN APP OPENS)
+# INTRO
 # =========================================================
 if menu == "Select an option":
     st.markdown("""
     <div style="text-align: justify; font-size: 17px; line-height: 1.6;">
     Groundwater quality data at well level were obtained from the Central Ground Water Board (CGWB),
-    Chennai Regional Office and the project is done under the ICAR – AICRP – Integrated Water Management (IWM) programme,
-    TNAU, Coimbatore.
+    Chennai Regional Office under the ICAR – AICRP – Integrated Water Management (IWM) programme.
     <br><br>
-    This platform is developed to facilitate basin-wise assessment of groundwater quality across
-    major river basins of Tamil Nadu using long-term monitoring data. It enables users to explore
-    spatial and temporal variations in key water quality parameters through interactive statistical
-    summaries, visualizations, and correlation analysis.
-    <br><br>
-    The platform is intended to support researchers, planners, and students in understanding
-    groundwater quality trends and their implications for sustainable water resources management.
+    This platform enables basin-wise assessment of groundwater quality across major river basins
+    of Tamil Nadu using long-term monitoring data.
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
     st.image(
         "image.png",
-        caption="Spatial distribution of groundwater Water Quality Index (WQI) across river basins of Tamil Nadu",
+        caption="Spatial distribution of groundwater quality across river basins of Tamil Nadu",
         use_container_width=True
     )
 
 # =========================================================
-# LOAD DEFAULT DATA
+# LOAD DATA – YEAR HARD FIX
 # =========================================================
 @st.cache_data
 def load_default_data():
     df = pd.read_csv("WQ_Basins.csv")
-    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
-    df["Year"] = df["Date"].dt.year
+
+    # Ensure Date is string
+    df["Date"] = df["Date"].astype(str)
+
+    # 🔥 HARD YEAR EXTRACTION (THIS IS THE FIX)
+    df["Year"] = (
+        df["Date"]
+        .str.extract(r"(19\d{2}|20\d{2})")[0]
+        .astype(float)
+    )
+
     return df
 
 df = load_default_data()
 
 # =========================================================
-# LOAD USER DATA
+# LOAD USER DATA (SAME FIX)
 # =========================================================
 @st.cache_data
 def load_data(file):
@@ -99,48 +100,50 @@ def load_data(file):
         df = pd.read_csv(file)
     else:
         df = pd.read_excel(file)
-    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
-    df["Year"] = df["Date"].dt.year
+
+    df["Date"] = df["Date"].astype(str)
+    df["Year"] = (
+        df["Date"]
+        .str.extract(r"(19\d{2}|20\d{2})")[0]
+        .astype(float)
+    )
+
     return df
 
 # =========================================================
-# HELP SECTION
+# HELP
 # =========================================================
 if help_clicked:
     st.subheader("Help / About")
     st.markdown("""
-**Descriptive Statistics**
-- Basin-wise and year-wise statistical summaries  
-
-**Visualizations**
-- Temporal and seasonal trends of water quality parameters  
-
-**Correlation Analysis**
-- Pearson and Spearman correlation analysis  
-
-**Upload Data**
-- Upload CSV or Excel files with Basin, Date, Season and numeric parameters
+- Descriptive Statistics  
+- Visualizations  
+- Correlation Analysis  
 """)
 
 # =========================================================
-# MAIN ANALYSIS SECTION
+# MAIN ANALYSIS
 # =========================================================
 if menu != "Select an option":
 
     basins = sorted(df["Basin"].dropna().unique())
     basin = st.sidebar.selectbox("Select Basin", basins)
 
-    years = np.sort(df["Year"].dropna().astype(int))
+    years = sorted(df["Year"].dropna().unique())
+
+    st.sidebar.write(f"**Data available up to:** {int(max(years))}")
+
     year_range = st.sidebar.slider(
         "Select Year Range",
-        min_value=int(years.min()),
-        max_value=int(years.max()),
-        value=(int(years.min()), int(years.max()))
+        min_value=int(min(years)),
+        max_value=int(max(years)),
+        value=(int(min(years)), int(max(years)))
     )
 
-    parameters = df.select_dtypes(include=[np.number]).columns.tolist()
-    exclude_cols = ["Latitude", "Longitude", "Year"]
-    parameters = [p for p in parameters if p not in exclude_cols]
+    parameters = [
+        c for c in df.select_dtypes(include=[np.number]).columns
+        if c not in ["Year", "Latitude", "Longitude"]
+    ]
 
     param = st.sidebar.selectbox("Select Parameter", parameters)
 
@@ -151,9 +154,8 @@ if menu != "Select an option":
     ]
 
     if filtered.empty:
-        st.warning("No data available for the selected options.")
+        st.warning("No data available.")
     else:
-
         if menu == "Descriptive Statistics":
             st.subheader("Descriptive Statistics")
             st.dataframe(
@@ -164,14 +166,14 @@ if menu != "Select an option":
 
         elif menu == "Visualizations":
             st.subheader("Visualizations")
-            plt.figure(figsize=(12, 6))
+            plt.figure(figsize=(12,6))
             sns.lineplot(data=filtered, x="Year", y=param, hue="Season", marker="o")
             st.pyplot(plt)
 
         elif menu == "Correlation Analysis":
             st.subheader("Correlation Analysis")
             corr = filtered[parameters].corr()
-            plt.figure(figsize=(12, 8))
+            plt.figure(figsize=(12,8))
             sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
             st.pyplot(plt)
 
@@ -181,22 +183,17 @@ if menu != "Select an option":
 if author_clicked:
     st.subheader("Authors & Data Source")
     st.markdown("""
-- **B. Sridhanabharathi**, PhD Scholar (SWCE), AEC&RI, TNAU, Coimbatore  
-- **V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
-- **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
+- **B. Sridhanabharathi**, PhD Scholar, TNAU  
+- **V. Ravikumar**, Professor, TNAU  
 
-**Data Source:** Central Ground Water Board (CGWB), Ministry of Water Resources, Government of India
+**Data Source:** CGWB, Government of India
 """)
 
 # =========================================================
-# UPLOAD DATA
+# UPLOAD
 # =========================================================
 if upload_clicked:
-    uploaded_file = st.file_uploader(
-        "Upload your own CSV / Excel file",
-        type=["csv", "xls", "xlsx"]
-    )
+    uploaded_file = st.file_uploader("Upload CSV / Excel", ["csv", "xls", "xlsx"])
     if uploaded_file:
         df = load_data(uploaded_file)
-        st.success("Data loaded successfully. Use the sidebar to begin analysis.")
-
+        st.success("Data loaded successfully.")
