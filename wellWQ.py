@@ -30,7 +30,7 @@ upload_clicked = st.sidebar.button("Upload Data (Optional)")
 
 menu = st.sidebar.selectbox(
     "Select Option",
-    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
 # =========================================================
@@ -199,4 +199,5 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Data loaded successfully. Use the sidebar to begin analysis.")
+
 
