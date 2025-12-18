@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 # -----------------
 # Page Configuration
 # -----------------
@@ -20,21 +21,21 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------
-# Sidebar controls (DEFINE FIRST)
-# -----------------
+# =========================================================
+# SIDEBAR CONTROLS (DEFINE ONCE — VERY IMPORTANT)
+# =========================================================
 help_clicked = st.sidebar.button("Help / About")
 author_clicked = st.sidebar.button("Authors & Data Source")
 upload_clicked = st.sidebar.button("Upload Data (Optional)")
 
 menu = st.sidebar.selectbox(
     "Select Option",
-    ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
 )
 
-# -----------------
-# App Title
-# -----------------
+# =========================================================
+# APP TITLE
+# =========================================================
 st.markdown(
     "<h1 style='text-align: center; color: #003366;'>"
     "Ground Water Quality Analysis – River Basins of Tamil Nadu"
@@ -49,18 +50,23 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# -----------------
-# Intro Section (ONLY at start)
-# -----------------
+# =========================================================
+# INTRO SECTION (ONLY WHEN APP OPENS)
+# =========================================================
 if menu == "Select an option":
     st.markdown("""
     <div style="text-align: justify; font-size: 17px; line-height: 1.6;">
-    Data of Water quality at well level is Obtained from Central Groundwater Board, Chennai Regional office. 
-    The Project is under ICAR - AICRP -IWM, TNAU, Coimbatore.
-    This platform is developed to facilitate basin-wise assessment of groundwater quality across major river basins of Tamil Nadu using long-term monitoring data. It enables users to explore spatial and temporal variations in key water quality parameters through interactive statistical summaries, visualizations, and correlation analysis.
-    The platform is intended to support researchers, planners, and students in understanding groundwater quality trends and their implications for sustainable water resources management.
-
-    The users can also use this platform for calculation of major Water quality indicators like SAR,RSC,Sodium percentage and Overall Water quality Index.
+    Groundwater quality data at well level were obtained from the Central Ground Water Board (CGWB),
+    Chennai Regional Office, under the ICAR – AICRP – Integrated Water Management (IWM) programme,
+    TNAU, Coimbatore.
+    <br><br>
+    This platform is developed to facilitate basin-wise assessment of groundwater quality across
+    major river basins of Tamil Nadu using long-term monitoring data. It enables users to explore
+    spatial and temporal variations in key water quality parameters through interactive statistical
+    summaries, visualizations, and correlation analysis.
+    <br><br>
+    The platform is intended to support researchers, planners, and students in understanding
+    groundwater quality trends and their implications for sustainable water resources management.
     </div>
     """, unsafe_allow_html=True)
 
@@ -68,144 +74,110 @@ if menu == "Select an option":
 
     st.image(
         "image.png",
-        caption="Groundwater Monitoring & Analysis",
+        caption="Spatial distribution of groundwater Water Quality Index (WQI) across river basins of Tamil Nadu",
         use_container_width=True
     )
 
-
-# -----------------
-# Load default data
-# -----------------
+# =========================================================
+# LOAD DEFAULT DATA
+# =========================================================
 @st.cache_data
 def load_default_data():
     df = pd.read_csv("WQ_Basins.csv")
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    df['Year'] = df['Date'].dt.year
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    df["Year"] = df["Date"].dt.year
     return df
 
-df_default = load_default_data()
-df = df_default.copy()
+df = load_default_data()
 
-# -----------------
-# Load user uploaded data
-# -----------------
+# =========================================================
+# LOAD USER DATA
+# =========================================================
 @st.cache_data
 def load_data(file):
-    if file.name.endswith('.csv'):
+    if file.name.endswith(".csv"):
         df = pd.read_csv(file)
     else:
         df = pd.read_excel(file)
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    df['Year'] = df['Date'].dt.year
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    df["Year"] = df["Date"].dt.year
     return df
 
-# -----------------
-# Display help if clicked
-# -----------------
+# =========================================================
+# HELP SECTION
+# =========================================================
 if help_clicked:
     st.subheader("Help / About")
     st.markdown("""
 **Descriptive Statistics**
-- Pick a basin and year range to view summaries  
-- Stats available: mean, median, minimum_value, maximum_ value, standard_deviation, count  
+- Basin-wise and year-wise statistical summaries  
 
 **Visualizations**
-- Compare parameters across years and seasons  
-- Bar Chart, Scatter Plot, Box Plot, Line Graph  
+- Temporal and seasonal trends of water quality parameters  
 
 **Correlation Analysis**
-- Explore parameter relationships (Pearson, Spearman)  
+- Pearson and Spearman correlation analysis  
 
-**Upload Your Own Data**
-- Optional CSV/Excel upload  
-- Columns: Basin, Date (YYYY-MM-DD), Season, Latitude, Longitude, numeric parameters
+**Upload Data**
+- Upload CSV or Excel files with Basin, Date, Season and numeric parameters
 """)
 
-# -----------------
-# Step-by-step progressive selections
-# -----------------
+# =========================================================
+# MAIN ANALYSIS SECTION
+# =========================================================
 if menu != "Select an option":
-    basins = df['Basin'].dropna().unique()
-    basin = st.sidebar.selectbox("Select Basin",  list(basins))
-    if basin != "Select a Basin":
-        years = np.sort(df['Year'].dropna().astype(int))
-        year_range = st.sidebar.slider(
-            "Select Year Range",
-            min_value=int(years.min()),
-            max_value=int(years.max()),
-            value=(int(years.min()), int(years.max())),
-            step=1
-        )
-        parameters = df.select_dtypes(include=[np.number]).columns.tolist()
-        exclude_cols = ['OBJECTID_12', 'Latitude', 'Longitude', 'Year']
-        parameters = [p for p in parameters if p not in exclude_cols]
-        param = st.sidebar.selectbox("Select Parameter", parameters)
 
-        if param != "Select a Parameter":
-            filtered = df[(df['Basin']==basin) & (df['Year']>=year_range[0]) & (df['Year']<=year_range[1])]
-            if filtered.empty:
-                st.warning("No data for selected basin/year.")
-            else:
-                # -----------------
-                # Descriptive Statistics
-                # -----------------
-                if menu == "Descriptive Statistics":
-                    stat = st.sidebar.multiselect(
-                        "Select Statistics",
-                        ["mean","median","min","max","std","count"]
-                    )
-                    if stat:
-                        st.subheader("Descriptive Statistics")
-                        results = filtered.groupby(['Year','Season'])[param].agg(stat).reset_index()
-                        st.dataframe(results)
+    basins = sorted(df["Basin"].dropna().unique())
+    basin = st.sidebar.selectbox("Select Basin", basins)
 
-                # -----------------
-                # Visualizations
-                # -----------------
-                elif menu == "Visualizations":
-                    viz_type = st.sidebar.selectbox(
-                        "Select Visualization",
-                        ["Select Visualization","Bar Chart","Scatter Plot","Box Plot","Line Graph"]
-                    )
-                    if viz_type != "Select Visualization":
-                        st.subheader("Visualizations")
-                        filtered['Year'] = filtered['Year'].astype(int)
-                        plt.figure(figsize=(12,6))
+    years = np.sort(df["Year"].dropna().astype(int))
+    year_range = st.sidebar.slider(
+        "Select Year Range",
+        min_value=int(years.min()),
+        max_value=int(years.max()),
+        value=(int(years.min()), int(years.max()))
+    )
 
-                        if viz_type=="Bar Chart":
-                            avg = filtered.groupby(['Year','Season'])[param].mean().reset_index()
-                            sns.barplot(x="Year", y=param, hue="Season", data=avg)
-                        elif viz_type=="Scatter Plot":
-                            sns.scatterplot(x="Year", y=param, hue="Season", data=filtered)
-                            sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
-                        elif viz_type=="Box Plot":
-                            sns.boxplot(x="Season", y=param, data=filtered)
-                        elif viz_type=="Line Graph":
-                            sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered)
+    parameters = df.select_dtypes(include=[np.number]).columns.tolist()
+    exclude_cols = ["Latitude", "Longitude", "Year"]
+    parameters = [p for p in parameters if p not in exclude_cols]
 
-                        plt.title(f"{viz_type} of {param} for {basin}")
-                        plt.xticks(rotation=90)
-                        st.pyplot(plt)
+    param = st.sidebar.selectbox("Select Parameter", parameters)
 
-                # -----------------
-                # Correlation Analysis
-                # -----------------
-                elif menu == "Correlation Analysis":
-                    corr_method = st.sidebar.radio("Correlation Method", ["pearson","spearman"])
-                    corr_df = filtered[parameters].dropna()
-                    corr = corr_df.corr(method=corr_method)
-                    st.subheader("Correlation Analysis")
-                    st.dataframe(corr)
-                    plt.figure(figsize=(12,8))
-                    ax = sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1,vmax=1)
-                    colorbar = ax.collections[0].colorbar
-                    colorbar.set_ticks([-1,-0.5,0,0.5,1])
-                    colorbar.set_ticklabels(['-1\nStrong Negative','Weak (-0.5)','0\nNo Correlation','Weak (+0.5)','+1\nStrong Positive'])
-                    st.pyplot(plt)
+    filtered = df[
+        (df["Basin"] == basin) &
+        (df["Year"] >= year_range[0]) &
+        (df["Year"] <= year_range[1])
+    ]
 
-# -----------------
-# Display Authors if sidebar clicked
-# -----------------
+    if filtered.empty:
+        st.warning("No data available for the selected options.")
+    else:
+
+        if menu == "Descriptive Statistics":
+            st.subheader("Descriptive Statistics")
+            st.dataframe(
+                filtered.groupby(["Year", "Season"])[param]
+                .agg(["mean", "median", "min", "max", "std", "count"])
+                .reset_index()
+            )
+
+        elif menu == "Visualizations":
+            st.subheader("Visualizations")
+            plt.figure(figsize=(12, 6))
+            sns.lineplot(data=filtered, x="Year", y=param, hue="Season", marker="o")
+            st.pyplot(plt)
+
+        elif menu == "Correlation Analysis":
+            st.subheader("Correlation Analysis")
+            corr = filtered[parameters].corr()
+            plt.figure(figsize=(12, 8))
+            sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+            st.pyplot(plt)
+
+# =========================================================
+# AUTHORS
+# =========================================================
 if author_clicked:
     st.subheader("Authors & Data Source")
     st.markdown("""
@@ -213,26 +185,17 @@ if author_clicked:
 - **V. Ravikumar**, Professor (SWCE), CWGS, TNAU, Coimbatore  
 - **JC Kasimani**, CEO & Co-Founder, Infolayer, UK  
 
-**Data Source:** Central Ground Water Board, Chennai, Ministry of Water Resources, Government of India
+**Data Source:** Central Ground Water Board (CGWB), Ministry of Water Resources, Government of India
 """)
 
-# -----------------
-# Display Upload if sidebar clicked
-# -----------------
+# =========================================================
+# UPLOAD DATA
+# =========================================================
 if upload_clicked:
-    uploaded_file = st.file_uploader("Upload your own CSV/Excel (optional)", type=["csv","xls","xlsx"])
+    uploaded_file = st.file_uploader(
+        "Upload your own CSV / Excel file",
+        type=["csv", "xls", "xlsx"]
+    )
     if uploaded_file:
         df = load_data(uploaded_file)
-        st.success("Your data is loaded! You can now use the selections above.")
-
-
-
-
-
-
-
-
-
-
-
-
+        st.success("Data loaded successfully. Use the sidebar to begin analysis.")
