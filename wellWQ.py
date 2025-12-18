@@ -135,7 +135,7 @@ if menu == "Water Quality Indicators":
 
     st.subheader("Water Quality Indicators")
     st.markdown(
-        "Select the unit of measurement for the parameters"
+        "Select the unit of measurement for the parameters. "
         "If water quality parameters are in **mg/L**, conversion to **meq/L** "
         "is handled internally for index calculations."
     )
@@ -285,6 +285,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
