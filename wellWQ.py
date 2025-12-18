@@ -35,7 +35,7 @@ menu = st.sidebar.selectbox(
         "Descriptive Statistics",
         "Visualizations",
         "Correlation Analysis",
-        "Water Quality Indices"
+        "Water Quality Indicators"
     ]
 )
 
@@ -125,15 +125,15 @@ if help_clicked:
 - Descriptive Statistics  
 - Visualizations  
 - Correlation Analysis  
-- Water Quality Indices (SAR, RSC, Na%, PI, MH, KR, PS, WQI)
+- Water Quality Indicators (SAR, RSC, Na%, PI, MH, KR, PS, WQI)
 """)
 
 # =========================================================
-# WATER QUALITY INDICES (COPIED AS-IS FROM YOUR REFERENCE)
+# WATER QUALITY INDICATORS (COPIED AS-IS FROM YOUR REFERENCE)
 # =========================================================
-if menu == "Water Quality Indices":
+if menu == "Water Quality Indicators":
 
-    st.subheader("Water Quality Indices")
+    st.subheader("Water Quality Indicators")
     st.markdown(
         "If water quality parameters are in **mg/L**, conversion to **meq/L** "
         "is handled internally for index calculations."
@@ -284,4 +284,5 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
