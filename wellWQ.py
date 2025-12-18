@@ -104,18 +104,27 @@ def load_data(file):
     df["Year"] = df["Date"].str.extract(r"(19\d{2}|20\d{2})")[0].astype(float)
     return df
 
-# =========================================================
-# HELP
-# =========================================================
+# -----------------
+# Display help if clicked
+# -----------------
 if help_clicked:
     st.subheader("Help / About")
     st.markdown("""
-- Descriptive Statistics  
-- Visualizations  
-- Correlation Analysis  
-- Water Quality Indicators
-""")
+**Descriptive Statistics**
+- Pick a basin and year range to view summaries  
+- Stats available: mean, median, minimum_value, maximum_ value, standard_deviation, count  
 
+**Visualizations**
+- Compare parameters across years and seasons  
+- Bar Chart, Scatter Plot, Box Plot, Line Graph  
+
+**Correlation Analysis**
+- Explore parameter relationships (Pearson, Spearman)  
+
+**Upload Your Own Data**
+- Optional CSV/Excel upload  
+- Columns: Basin, Date (YYYY-MM-DD), Season, Latitude, Longitude, numeric parameters
+""")
 # =========================================================
 # WATER QUALITY INDICATORS (COPIED AS-IS FROM YOUR REFERENCE)
 # =========================================================
@@ -377,6 +386,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
