@@ -30,7 +30,13 @@ upload_clicked = st.sidebar.button("Upload Data (Optional)")
 
 menu = st.sidebar.selectbox(
     "Select Option",
-    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+    [
+        "Select an option",
+        "Descriptive Statistics",
+        "Visualizations",
+        "Correlation Analysis",
+        "Water Quality Indicators"
+    ]
 )
 
 # =========================================================
@@ -57,20 +63,13 @@ if menu == "Select an option":
     st.markdown("""
     <div style="text-align: justify; font-size: 17px; line-height: 1.6;">
     Groundwater quality data at well level were obtained from the Central Ground Water Board (CGWB),
-    Chennai Regional Office and the project is dne under the ICAR – AICRP – Integrated Water Management (IWM) programme,
-    TNAU, Coimbatore.
+    Chennai Regional Office under the ICAR – AICRP – Integrated Water Management (IWM) programme.
     <br><br>
-    This platform is developed to facilitate basin-wise assessment of groundwater quality across
-    major river basins of Tamil Nadu using long-term monitoring data. It enables users to explore
-    spatial and temporal variations in key water quality parameters through interactive statistical
-    summaries, visualizations, and correlation analysis.
-    <br><br>
-    The platform is intended to support researchers, planners, and students in understanding
-    groundwater quality trends and their implications for sustainable water resources management.
+    This platform enables basin-wise assessment of groundwater quality across major river basins
+    of Tamil Nadu using long-term monitoring data and supports statistical analysis, visualization,
+    correlation analysis, and calculation of water quality indices.
     </div>
     """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
 
     st.image(
         "image.png",
@@ -84,24 +83,16 @@ if menu == "Select an option":
 @st.cache_data
 def load_default_data():
     df = pd.read_csv("WQ_Basins.csv")
-
-    # Ensure Date is string
     df["Date"] = df["Date"].astype(str)
-
-    # 🔥 HARD YEAR EXTRACTION (THIS IS THE FIX)
     df["Year"] = (
         df["Date"]
         .str.extract(r"(19\d{2}|20\d{2})")[0]
         .astype(float)
     )
-
     return df
 
 df = load_default_data()
 
-# =========================================================
-# LOAD USER DATA (SAME FIX)
-# =========================================================
 @st.cache_data
 def load_data(file):
     if file.name.endswith(".csv"):
@@ -115,7 +106,6 @@ def load_data(file):
         .str.extract(r"(19\d{2}|20\d{2})")[0]
         .astype(float)
     )
-
     return df
 
 # =========================================================
@@ -124,23 +114,82 @@ def load_data(file):
 if help_clicked:
     st.subheader("Help / About")
     st.markdown("""
-- Descriptive Statistics  
-- Visualizations  
-- Correlation Analysis  
+- **Descriptive Statistics** – Summary statistics  
+- **Visualizations** – Temporal and seasonal trends  
+- **Correlation Analysis** – Relationship between parameters  
+- **Water Quality Indicators** – SAR, RSC, Na%, PI, MH, KR, PS and WQI
 """)
 
 # =========================================================
-# MAIN ANALYSIS
+# WATER QUALITY INDICATORS MODULE
 # =========================================================
-if menu != "Select an option":
+if menu == "Water Quality Indicators":
+
+    st.subheader("Water Quality Indicators & Water Quality Index (WQI)")
+
+    unit_choice = st.radio("Input unit of chemical parameters:", ["mg/L", "meq/L"], horizontal=True)
+
+    df_wqi = df.copy()
+
+    eq = {
+        "Ca": 20.04, "Mg": 12.15, "Na": 23.0, "K": 39.1,
+        "HCO3": 61.0, "CO3": 30.0, "Cl": 35.45, "SO4": 48.0
+    }
+
+    def to_meq(col):
+        if col not in df_wqi.columns:
+            return None
+        x = pd.to_numeric(df_wqi[col], errors="coerce")
+        return x / eq[col] if unit_choice == "mg/L" else x
+
+    Na, Ca, Mg = to_meq("Na"), to_meq("Ca"), to_meq("Mg")
+    K = to_meq("K")
+    HCO3, CO3 = to_meq("HCO3"), to_meq("CO3")
+    Cl, SO4 = to_meq("Cl"), to_meq("SO4")
+
+    df_wqi["SAR"] = Na / np.sqrt((Ca + Mg) / 2)
+    df_wqi["RSC"] = (CO3 + HCO3) - (Ca + Mg)
+    df_wqi["Na%"] = ((Na + K) / (Na + K + Ca + Mg)) * 100
+    df_wqi["PI"] = ((Na + np.sqrt(HCO3)) / (Ca + Mg + Na)) * 100
+    df_wqi["MH"] = (Mg / (Ca + Mg)) * 100
+    df_wqi["KR"] = Na / (Ca + Mg)
+    df_wqi["PS"] = Cl + np.sqrt(SO4)
+
+    # ---- WQI (Horton method) ----
+    Sn = {"SAR":10, "RSC":2.5, "Na%":60, "PI":25, "MH":50, "KR":1, "PS":3}
+    k = 1 / sum(1 / v for v in Sn.values())
+    W = {i: k / Sn[i] for i in Sn}
+
+    df_wqi["WQI"] = sum(((df_wqi[i] / Sn[i]) * 100) * W[i] for i in Sn) / sum(W.values())
+
+    df_wqi["WQI_Category"] = pd.cut(
+        df_wqi["WQI"],
+        bins=[0, 25, 50, 75, 100, 1e6],
+        labels=["Excellent", "Good", "Poor", "Very Poor", "Unsuitable"]
+    )
+
+    show_cols = [
+        c for c in ["Basin", "Year", "SAR", "RSC", "Na%", "PI", "MH", "KR", "PS", "WQI", "WQI_Category"]
+        if c in df_wqi.columns
+    ]
+
+    st.dataframe(df_wqi[show_cols])
+
+    st.download_button(
+        "Download Water Quality Indicators",
+        df_wqi[show_cols].to_csv(index=False).encode("utf-8"),
+        "Water_Quality_Indicators.csv"
+    )
+
+# =========================================================
+# OTHER ANALYSIS MODULES
+# =========================================================
+if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
 
     basins = sorted(df["Basin"].dropna().unique())
     basin = st.sidebar.selectbox("Select Basin", basins)
 
     years = sorted(df["Year"].dropna().unique())
-
-    st.sidebar.write(f"**Data available up to:** {int(max(years))}")
-
     year_range = st.sidebar.slider(
         "Select Year Range",
         min_value=int(min(years)),
@@ -161,29 +210,26 @@ if menu != "Select an option":
         (df["Year"] <= year_range[1])
     ]
 
-    if filtered.empty:
-        st.warning("No data available.")
-    else:
-        if menu == "Descriptive Statistics":
-            st.subheader("Descriptive Statistics")
-            st.dataframe(
-                filtered.groupby(["Year", "Season"])[param]
-                .agg(["mean", "median", "min", "max", "std", "count"])
-                .reset_index()
-            )
+    if menu == "Descriptive Statistics":
+        st.subheader("Descriptive Statistics")
+        st.dataframe(
+            filtered.groupby(["Year", "Season"])[param]
+            .agg(["mean", "median", "min", "max", "std", "count"])
+            .reset_index()
+        )
 
-        elif menu == "Visualizations":
-            st.subheader("Visualizations")
-            plt.figure(figsize=(12,6))
-            sns.lineplot(data=filtered, x="Year", y=param, hue="Season", marker="o")
-            st.pyplot(plt)
+    elif menu == "Visualizations":
+        st.subheader("Visualizations")
+        plt.figure(figsize=(12,6))
+        sns.lineplot(data=filtered, x="Year", y=param, hue="Season", marker="o")
+        st.pyplot(plt)
 
-        elif menu == "Correlation Analysis":
-            st.subheader("Correlation Analysis")
-            corr = filtered[parameters].corr()
-            plt.figure(figsize=(12,8))
-            sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
-            st.pyplot(plt)
+    elif menu == "Correlation Analysis":
+        st.subheader("Correlation Analysis")
+        corr = filtered[parameters].corr()
+        plt.figure(figsize=(12,8))
+        sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+        st.pyplot(plt)
 
 # =========================================================
 # AUTHORS
@@ -194,7 +240,7 @@ if author_clicked:
 - **B. Sridhanabharathi**, PhD Scholar, TNAU  
 - **V. Ravikumar**, Professor, TNAU  
 
-**Data Source:** CGWB, Government of India
+**Data Source:** Central Ground Water Board (CGWB), Government of India
 """)
 
 # =========================================================
@@ -205,4 +251,3 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Data loaded successfully.")
-
