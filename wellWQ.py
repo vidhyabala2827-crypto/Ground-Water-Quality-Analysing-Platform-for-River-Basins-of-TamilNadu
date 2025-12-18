@@ -132,88 +132,111 @@ if help_clicked:
 # WATER QUALITY INDICATORS (COPIED AS-IS FROM YOUR REFERENCE)
 # =========================================================
 if menu == "Water Quality Indicators":
-
     st.subheader("Water Quality Indicators")
-    st.markdown(
-        "Select the unit of measurement for the parameters. "
-        "If water quality parameters are in **mg/L**, conversion to **meq/L** "
-        "is handled internally for index calculations."
-    )
+    st.markdown("If water quality parameters are in mg/L, conversion to meq/L is handled internally for index calculations.")
 
+    
     with st.expander("Show formulas and definitions", expanded=False):
-
         st.markdown("### **1. Sodium Adsorption Ratio (SAR)**")
         st.latex(r"SAR = \frac{Na^+}{\sqrt{\frac{Ca^{2+} + Mg^{2+}}{2}}}")
+        st.markdown("Indicates sodium hazard. High SAR reduces soil permeability.")
 
+        st.markdown("---")
         st.markdown("### **2. Residual Sodium Carbonate (RSC)**")
         st.latex(r"RSC = (CO_3^{2-} + HCO_3^{-}) - (Ca^{2+} + Mg^{2+})")
+        st.markdown("High RSC suggests carbonate/bicarbonate hazard.")
 
+        st.markdown("---")
         st.markdown("### **3. Sodium Percentage (Na%)**")
         st.latex(r"\%Na = \frac{Na^+ + K^+}{Na^+ + K^+ + Ca^{2+} + Mg^{2+}} \times 100")
+        st.markdown("Indicates sodium dominance. High Na% affects soil structure.")
 
+        st.markdown("---")
         st.markdown("### **4. Permeability Index (PI)**")
         st.latex(r"PI = \frac{Na^+ + \sqrt{HCO_3^-}}{Ca^{2+} + Mg^{2+} + Na^+} \times 100")
+        st.markdown("Indicates long-term impact on soil permeability.")
 
+        st.markdown("---")
         st.markdown("### **5. Magnesium Hazard (MH)**")
         st.latex(r"MH = \frac{Mg^{2+}}{Ca^{2+} + Mg^{2+}} \times 100")
+        st.markdown("High MH can reduce crop yield.")
 
+        st.markdown("---")
         st.markdown("### **6. Kelly's Ratio (KR)**")
         st.latex(r"KR = \frac{Na^+}{Ca^{2+} + Mg^{2+}}")
+        st.markdown("KR > 1 indicates unsuitability for irrigation.")
 
+        st.markdown("---")
         st.markdown("### **7. Potential Salinity (PS)**")
         st.latex(r"PS = Cl^- + \sqrt{SO_4^{2-}}")
+        st.markdown("Represents salinity hazard.")
 
+        st.markdown("---")
         st.markdown("## 🔷 Water Quality Index (WQI) — Horton Method")
         st.latex(r"WQI = \frac{\sum (q_n \cdot W_n)}{\sum W_n}")
+        st.latex(r"q_n = \left( \frac{V_n - V_{id}}{S_n - V_{id}} \right) \times 100")
+        st.latex(r"W_n = \frac{k}{S_n}")
+        st.latex(r"k = \frac{1}{\sum (1 / S_n)}")
+        st.markdown("Vid = 0 for all indices.")
+        Sn_table = pd.DataFrame({"Index": ["SAR","RSC","Na%","PI","MH","KR","PS"], "Standard Limit (Sₙ)": [10,2.5,60,25,50,1,3]})
+        st.dataframe(Sn_table, hide_index=True)
 
     unit_choice = st.radio("Select input unit:", ["meq/L", "mg/L"], index=0)
 
-    df_wqi = df.copy()
+    indicators_options = ["SAR", "RSC", "Na%", "PI", "MH", "KR", "PS", "WQI"]
+    selected_indicators = st.multiselect("Select indicators to display:", indicators_options, default=indicators_options)
 
-    eq = {
-        "Ca": 20.04, "Mg": 12.15, "Na": 23.0, "K": 39.1,
-        "HCO3": 61.0, "CO3": 30.0, "Cl": 35.45, "SO4": 48.0
-    }
+    df_wqi = df.copy()
+    eq = {"Ca": 20, "Mg": 12.2, "Na": 23, "K": 39.1, "HCO3": 61, "CO3": 30, "Cl": 35.5, "SO4": 48}
 
     def to_meq(ion):
-        if ion not in df_wqi.columns:
-            return None
+        if ion not in df_wqi.columns: return None
         x = pd.to_numeric(df_wqi[ion], errors="coerce")
         return x / eq[ion] if unit_choice == "mg/L" else x
 
-    Na, Ca, Mg = to_meq("Na"), to_meq("Ca"), to_meq("Mg")
-    K = to_meq("K")
-    HCO3, CO3 = to_meq("HCO3"), to_meq("CO3")
-    Cl, SO4 = to_meq("Cl"), to_meq("SO4")
+    need = {"SAR":["Na","Ca","Mg"],"RSC":["CO3","HCO3","Ca","Mg"],"Na%":["Na","K","Ca","Mg"],
+            "PI":["Na","HCO3","Ca","Mg"],"MH":["Ca","Mg"],"KR":["Na","Ca","Mg"],"PS":["Cl","SO4"]}
 
-    df_wqi["SAR"] = Na / np.sqrt((Ca + Mg) / 2)
-    df_wqi["RSC"] = (CO3 + HCO3) - (Ca + Mg)
-    df_wqi["Na%"] = ((Na + K) / (Na + K + Ca + Mg)) * 100
-    df_wqi["PI"] = ((Na + np.sqrt(HCO3)) / (Ca + Mg + Na)) * 100
-    df_wqi["MH"] = (Mg / (Ca + Mg)) * 100
-    df_wqi["KR"] = Na / (Ca + Mg)
-    df_wqi["PS"] = Cl + np.sqrt(SO4)
+    for idx in ["SAR","RSC","Na%","PI","MH","KR","PS"]:
+        if idx not in selected_indicators or idx in df_wqi.columns: continue
+        if any(i not in df_wqi.columns for i in need[idx]): continue
+        Na, Ca, Mg, K = to_meq("Na"), to_meq("Ca"), to_meq("Mg"), to_meq("K")
+        HCO3, CO3, Cl, SO4 = to_meq("HCO3"), to_meq("CO3"), to_meq("Cl"), to_meq("SO4")
+        if idx == "SAR": df_wqi["SAR"] = Na / np.sqrt((Ca + Mg) / 2)
+        elif idx == "RSC": df_wqi["RSC"] = (CO3 + HCO3) - (Ca + Mg)
+        elif idx == "Na%": df_wqi["Na%"] = ((Na + K) / (Na + K + Ca + Mg)) * 100
+        elif idx == "PI": df_wqi["PI"] = ((Na + np.sqrt(HCO3)) / (Ca + Mg + Na)) * 100
+        elif idx == "MH": df_wqi["MH"] = (Mg / (Ca + Mg)) * 100
+        elif idx == "KR": df_wqi["KR"] = Na / (Ca + Mg)
+        elif idx == "PS": df_wqi["PS"] = Cl + np.sqrt(SO4)
 
+   
     Sn = {"SAR":10,"RSC":2.5,"Na%":60,"PI":25,"MH":50,"KR":1,"PS":3}
-    k = 1 / sum(1 / v for v in Sn.values())
-    W = {i: k / Sn[i] for i in Sn}
+    usable = [i for i in Sn if i in df_wqi.columns]
+    if usable:
+        k = 1 / sum([1/Sn[i] for i in usable])
+        W = {i: k/Sn[i] for i in usable}
+        for i in usable: df_wqi[f"q_{i}"] = (df_wqi[i] / Sn[i]) * 100
+        for i in usable: df_wqi[f"W_{i}"] = df_wqi[f"q_{i}"] * W[i]
+        df_wqi["WQI"] = df_wqi[[f"W_{i}" for i in usable]].sum(axis=1) / sum(W.values())
 
-    df_wqi["WQI"] = sum(((df_wqi[i] / Sn[i]) * 100) * W[i] for i in Sn) / sum(W.values())
+        def classify(x):
+            return ("Excellent" if x <= 25 else
+                    "Good" if x <= 50 else
+                    "Poor" if x <= 75 else
+                    "Very Poor" if x <= 100 else
+                    "Unsuitable")
+        df_wqi["WQI_Category"] = df_wqi["WQI"].apply(classify)
 
-    df_wqi["WQI_Category"] = pd.cut(
-        df_wqi["WQI"],
-        bins=[0, 25, 50, 75, 100, 1e6],
-        labels=["Excellent", "Good", "Poor", "Very Poor", "Unsuitable"]
-    )
+    # ---- Clean & show table ----
+    df_display = df_wqi.drop(columns=[c for c in df_wqi.columns if c.startswith("q_") or c.startswith("W_")], errors="ignore")
+    index_cols = [i for i in indicators_options if i in df_display.columns and i != "WQI"]
+    ordered = [c for c in df_display.columns if c not in index_cols + ["WQI","WQI_Category"]] + index_cols + ["WQI","WQI_Category"]
+    st.dataframe(df_display[ordered])
 
-    st.dataframe(df_wqi)
-    st.download_button(
-        "Download Full Data with WQI",
-        df_wqi.to_csv(index=False).encode("utf-8"),
-        "WQ_full_with_WQI.csv"
-    )
-
+    st.download_button("Download Full Data", df_display.to_csv(index=False).encode("utf-8"), "WQ_full_with_WQI.csv")
     st.stop()
+
 
 # =========================================================
 # OTHER ANALYSIS MODULES
@@ -285,6 +308,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
