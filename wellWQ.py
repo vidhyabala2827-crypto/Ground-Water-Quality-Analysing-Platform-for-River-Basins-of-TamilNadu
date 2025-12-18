@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-
 # -----------------
 # Page Configuration
 # -----------------
@@ -16,21 +15,42 @@ st.set_page_config(
 # Sidebar Style
 # -----------------
 st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {background-color: #e6f2ff;}
-    .css-1d391kg h2 {color: #0059b3;}
-    </style>
+<style>
+[data-testid="stSidebar"] {background-color: #e6f2ff;}
+</style>
 """, unsafe_allow_html=True)
+
+# -----------------
+# Sidebar controls (DEFINE FIRST)
+# -----------------
+help_clicked = st.sidebar.button("Help / About")
+author_clicked = st.sidebar.button("Authors & Data Source")
+upload_clicked = st.sidebar.button("Upload Data (Optional)")
+
+menu = st.sidebar.selectbox(
+    "Select Option",
+    ["Select an option", "Descriptive Statistics", "Visualizations", "Correlation Analysis"]
+)
 
 # -----------------
 # App Title
 # -----------------
-st.markdown("<h1 style='text-align: center; color: #003366;'>Ground water quality Analysis- River Basins of TamilNadu</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; font-style: italic; color: #0059b3;'>"
+st.markdown(
+    "<h1 style='text-align: center; color: #003366;'>"
+    "Ground Water Quality Analysis – River Basins of Tamil Nadu"
+    "</h1>",
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    "<h4 style='text-align: center; font-style: italic; color: #0059b3;'>"
     "Project Work done under ICAR – AICRP – IWM, TNAU, Coimbatore."
-    "</h4>", unsafe_allow_html=True)
+    "</h4>",
+    unsafe_allow_html=True
+)
+
 # -----------------
-# Intro / Welcome Section (Shown only at start)
+# Intro Section (ONLY at start)
 # -----------------
 if menu == "Select an option":
     st.markdown("""
@@ -48,6 +68,7 @@ if menu == "Select an option":
         caption="Groundwater Monitoring & Analysis",
         use_container_width=True
     )
+
 
 # -----------------
 # Load default data
@@ -212,6 +233,7 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Your data is loaded! You can now use the selections above.")
+
 
 
 
