@@ -289,11 +289,21 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
         )
 
     elif menu == "Visualizations":
-        st.subheader("Visualizations")
-        plt.figure(figsize=(12,6))
-        sns.lineplot(data=filtered, x="Year", y=param, hue="Season", marker="o")
-        plt.ylabel(f"{param} (mg/L)")
-        st.pyplot(plt)
+                viz = st.sidebar.selectbox("Select Visualization", ["Select Visualization","Bar Chart","Scatter Plot","Box Plot","Line Graph"])
+                if viz != "Select Visualization":
+                    plt.figure(figsize=(12,6))
+                    st.subheader("Visualization")
+                    if viz == "Bar Chart":
+                        sns.barplot(x="Year", y=param, hue="Season", data=filtered.groupby(["Year","Season"])[param].mean().reset_index())
+                    elif viz == "Scatter Plot":
+                        sns.scatterplot(x="Year", y=param, hue="Season", data=filtered)
+                        sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
+                    elif viz == "Box Plot":
+                        sns.boxplot(x="Season", y=param, data=filtered)
+                    elif viz == "Line Graph":
+                        sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered)
+                    plt.xticks(rotation=90)
+                    st.pyplot(plt)
 
     elif menu == "Correlation Analysis":
         st.subheader("Correlation Analysis")
@@ -322,6 +332,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
