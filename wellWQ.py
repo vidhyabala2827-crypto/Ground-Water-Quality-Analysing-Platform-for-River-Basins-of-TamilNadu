@@ -289,21 +289,85 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
         )
 
     elif menu == "Visualizations":
-                viz = st.sidebar.selectbox("Select Visualization", ["Select Visualization","Bar Chart","Scatter Plot","Box Plot","Line Graph"])
-                if viz != "Select Visualization":
-                    plt.figure(figsize=(12,6))
-                    st.subheader("Visualization")
-                    if viz == "Bar Chart":
-                        sns.barplot(x="Year", y=param, hue="Season", data=filtered.groupby(["Year","Season"])[param].mean().reset_index())
-                    elif viz == "Scatter Plot":
-                        sns.scatterplot(x="Year", y=param, hue="Season", data=filtered)
-                        sns.regplot(x="Year", y=param, data=filtered, scatter=False, color="red")
-                    elif viz == "Box Plot":
-                        sns.boxplot(x="Season", y=param, data=filtered)
-                    elif viz == "Line Graph":
-                        sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered)
-                    plt.xticks(rotation=90)
-                    st.pyplot(plt)
+
+    viz = st.sidebar.selectbox(
+        "Select Visualization",
+        ["Select Visualization", "Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"]
+    )
+
+    if viz != "Select Visualization":
+
+        # ---- Unit dictionary ----
+        units = {
+            "pH": "",
+            "EC": "µS/cm",
+            "TDS": "mg/L",
+            "Ca": "mg/L",
+            "Mg": "mg/L",
+            "Na": "mg/L",
+            "K": "mg/L",
+            "Cl": "mg/L",
+            "SO4": "mg/L",
+            "HCO3": "mg/L",
+            "CO3": "mg/L",
+            "TH": "mg/L",
+            "SAR": "",
+            "RSC": "meq/L",
+            "Na%": "%",
+            "PI": "%",
+            "MH": "%",
+            "KR": "",
+            "PS": "meq/L",
+            "WQI": ""
+        }
+
+        unit = units.get(param, "")
+        ylabel = f"{param} ({unit})" if unit else param
+
+        st.subheader("Visualization")
+        plt.figure(figsize=(12, 6))
+
+        # ---- Ensure Year is integer for plotting ----
+        filtered_plot = filtered.copy()
+        filtered_plot["Year"] = filtered_plot["Year"].astype(int)
+
+        if viz == "Bar Chart":
+            sns.barplot(
+                x="Year",
+                y=param,
+                hue="Season",
+                data=filtered_plot.groupby(["Year", "Season"], as_index=False)[param].mean()
+            )
+
+        elif viz == "Scatter Plot":
+            sns.scatterplot(x="Year", y=param, hue="Season", data=filtered_plot)
+            sns.regplot(
+                x="Year",
+                y=param,
+                data=filtered_plot,
+                scatter=False,
+                color="red"
+            )
+
+        elif viz == "Box Plot":
+            sns.boxplot(x="Season", y=param, data=filtered_plot)
+
+        elif viz == "Line Graph":
+            sns.lineplot(
+                x="Year",
+                y=param,
+                hue="Season",
+                marker="o",
+                data=filtered_plot
+            )
+
+        # ---- Axis labels ----
+        plt.xlabel("Year")
+        plt.ylabel(ylabel)
+
+        plt.xticks(rotation=90)
+        st.pyplot(plt)
+
 
     elif menu == "Correlation Analysis":
         st.subheader("Correlation Analysis")
@@ -332,6 +396,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
