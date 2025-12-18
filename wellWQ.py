@@ -318,14 +318,21 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
             st.pyplot(plt)
 
     elif menu == "Correlation Analysis":
-        corr = filtered[parameters].dropna().corr(method=st.sidebar.radio("Correlation Method", ["pearson","spearman"]))
-        st.subheader("Correlation Matrix")
-        st.dataframe(corr)
-        plt.figure(figsize=(12,8))
-        sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
-        st.pyplot(plt)
-        plt.yticks(rotation=0)
-        st.pyplot(plt)
+
+    corr = filtered[parameters].dropna().corr(
+        method=st.sidebar.radio("Correlation Method", ["pearson", "spearman"])
+    )
+
+    st.subheader("Correlation Matrix")
+    st.dataframe(corr)
+
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+
+    # ---- FIX Y-axis label orientation ----
+    plt.yticks(rotation=0)
+
+    st.pyplot(plt)
             
 
 # =========================================================
@@ -347,6 +354,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
