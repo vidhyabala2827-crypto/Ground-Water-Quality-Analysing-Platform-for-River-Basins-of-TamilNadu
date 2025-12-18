@@ -281,58 +281,82 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
             "Select Visualization",
             ["Select Visualization", "Bar Chart", "Scatter Plot", "Box Plot", "Line Graph"]
         )
-
+      
         if viz != "Select Visualization":
 
-            units = {
-                "Ca": "mg/L", "Mg": "mg/L", "Na": "mg/L", "K": "mg/L",
-                "Cl": "mg/L", "SO4": "mg/L", "EC": "µS/cm",
-                "Na%": "%", "PI": "%", "MH": "%"
-            }
+    units = {
+        "Ca": "mg/L", "Mg": "mg/L", "Na": "mg/L", "K": "mg/L",
+        "Cl": "mg/L", "SO4": "mg/L", "EC": "µS/cm",
+        "Na%": "%", "PI": "%", "MH": "%"
+    }
 
-            ylabel = f"{param} ({units.get(param,'')})" if units.get(param) else param
+    ylabel = f"{param} ({units.get(param,'')})" if units.get(param) else param
 
-            filtered_plot = filtered.copy()
-            filtered_plot["Year"] = filtered_plot["Year"].astype(int)
+    filtered_plot = filtered.copy()
+    filtered_plot["Year"] = filtered_plot["Year"].astype(int)
 
-            plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(12, 6))
 
-            if viz == "Bar Chart":
-                sns.barplot(
-                    x="Year",
-                    y=param,
-                    hue="Season",
-                    data=filtered_plot.groupby(["Year", "Season"], as_index=False)[param].mean()
-                )
-            elif viz == "Scatter Plot":
-                sns.scatterplot(x="Year", y=param, hue="Season", data=filtered_plot)
-                sns.regplot(x="Year", y=param, data=filtered_plot, scatter=False, color="red")
-            elif viz == "Box Plot":
-                sns.boxplot(x="Season", y=param, data=filtered_plot)
-            elif viz == "Line Graph":
-                sns.lineplot(x="Year", y=param, hue="Season", marker="o", data=filtered_plot)
+    if viz == "Bar Chart":
+        sns.barplot(
+            x="Year",
+            y=param,
+            hue="Season",
+            data=filtered_plot.groupby(
+                ["Year", "Season"], as_index=False
+            )[param].mean()
+        )
 
-            plt.xlabel("Year")
-            plt.ylabel(ylabel)
-            plt.xticks(rotation=90)
-            st.pyplot(plt)
+    elif viz == "Scatter Plot":
+        sns.scatterplot(
+            x="Year", y=param, hue="Season", data=filtered_plot
+        )
+        sns.regplot(
+            x="Year", y=param,
+            data=filtered_plot,
+            scatter=False,
+            color="red"
+        )
 
-    elif menu == "Correlation Analysis":
+    elif viz == "Box Plot":
+        sns.boxplot(
+            x="Season", y=param, data=filtered_plot
+        )
+
+    elif viz == "Line Graph":
+        sns.lineplot(
+            x="Year", y=param, hue="Season",
+            marker="o", data=filtered_plot
+        )
+
+    plt.xlabel("Year")
+    plt.ylabel(ylabel)
+    plt.xticks(rotation=90)
+    st.pyplot(plt)
+
+
+elif menu == "Correlation Analysis":
 
     corr = filtered[parameters].dropna().corr(
-        method=st.sidebar.radio("Correlation Method", ["pearson", "spearman"])
+        method=st.sidebar.radio(
+            "Correlation Method", ["pearson", "spearman"]
+        )
     )
 
     st.subheader("Correlation Matrix")
     st.dataframe(corr)
 
     plt.figure(figsize=(12, 8))
-    sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+    sns.heatmap(
+        corr, annot=True, cmap="coolwarm",
+        vmin=-1, vmax=1
+    )
 
     # ---- FIX Y-axis label orientation ----
     plt.yticks(rotation=0)
 
     st.pyplot(plt)
+
             
 
 # =========================================================
@@ -354,6 +378,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
