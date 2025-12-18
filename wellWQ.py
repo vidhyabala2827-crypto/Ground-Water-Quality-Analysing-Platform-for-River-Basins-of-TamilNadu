@@ -119,7 +119,12 @@ if help_clicked:
 - Bar Chart, Scatter Plot, Box Plot, Line Graph  
 
 **Correlation Analysis**
-- Explore parameter relationships (Pearson, Spearman)  
+- Explore parameter relationships (Pearson, Spearman) 
+
+**Water Quality Indicators**
+- Select the unit of measurement for parameters available in data  
+- Formulae available for calculation of Water quality indicators like SAR,RSC,Soidum Percent, Kelly's Ratio,Magnesium Hazard,Potential Salinity and Permeability index
+- Overall Water Quality Index - Based on Horton's weightage formula is added for categorizing water quality of the basin
 
 **Upload Your Own Data**
 - Optional CSV/Excel upload  
@@ -386,6 +391,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
