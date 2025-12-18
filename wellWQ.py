@@ -199,3 +199,4 @@ if upload_clicked:
     if uploaded_file:
         df = load_data(uploaded_file)
         st.success("Data loaded successfully. Use the sidebar to begin analysis.")
+
