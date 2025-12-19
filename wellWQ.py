@@ -284,6 +284,7 @@ if menu in ["Descriptive Statistics", "Visualizations", "Correlation Analysis"]:
 
     if menu == "Descriptive Statistics":
         st.subheader("Descriptive Statistics")
+        stat = st.sidebar.multiselect("Select Statistics", ["mean","median","min","max","std","count"])
         st.dataframe(
             filtered.groupby(["Year", "Season"])[param]
             .agg(["mean", "median", "min", "max", "std"])
@@ -392,6 +393,7 @@ if upload_clicked:
     if file:
         df = load_data(file)
         st.success("File uploaded successfully.")
+
 
 
 
